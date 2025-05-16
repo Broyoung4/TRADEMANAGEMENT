@@ -39,7 +39,7 @@ export async function GET(request: NextRequest, context: { params: { id: string 
 
 
 export async function PUT(request: NextRequest, context: { params: { id: string } }) {
-    const { id } = context.params;
+    const { id } = await context.params;
     // Validate ID format early
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return NextResponse.json({ message: "Invalid inventory item ID format" }, { status: 400 });
