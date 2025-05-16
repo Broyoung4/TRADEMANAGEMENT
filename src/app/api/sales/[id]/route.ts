@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { connectToDB } from "../../../../utils/database"; // Adjust path
 import Sales from "../../../../models/sales";             // Adjust path
 
-export async function DELETE(request, { params }) {
+export async function DELETE( { params }) {
     try {
         await connectToDB();
         const { id: saleId } = params; // Sale ID from the dynamic route segment

@@ -5,7 +5,7 @@ import Inventory from "../../../../models/inventory";   // Adjust path
 import mongoose from 'mongoose';
 
 // --- GET a specific inventory item by ID ---
-export async function GET(request, { params }) {
+export async function GET( { params }) {
     try {
         await connectToDB();
         const { id } = params;
@@ -326,7 +326,7 @@ export async function PUT(request, { params }) {
 };
 
 // --- DELETE an inventory item by ID ---
-export const DELETE = async (request, { params }) => {
+export const DELETE = async ( { params }) => {
     const { id } = params;
     if (!id) {
         return NextResponse.json({ message: 'Item ID is required' }, { status: 400 });
