@@ -2,9 +2,8 @@
 import { NextResponse } from 'next/server';
 import { connectToDB } from "../../../utils/database"; // Adjust path as necessary
 import Inventory from "../../../models/inventory";    // Adjust path as necessary
-import mongoose from 'mongoose';
 
-export const GET = async (request) => {
+export const GET = async () => {
     try {
         await connectToDB();
         const inventories = await Inventory.find({})

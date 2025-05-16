@@ -83,7 +83,7 @@ const SellingPriceList = ({ inventory, onBack, onUpdatePrice, formatCurrency, is
         {inventory.length === 0 ? (
             <p className={`${isDarkMode ? "text-slate-400" : "text-slate-500"} py-4 text-center`}>No inventory items found. Add items in the dashboard.</p>
         ) : filteredInventory.length === 0 && searchTerm ? (
-             <p className={`${isDarkMode ? "text-slate-400" : "text-slate-500"} py-4 text-center`}>No items match your search "{searchTerm}".</p>
+             <p className={`${isDarkMode ? "text-slate-400" : "text-slate-500"} py-4 text-center`}>No items match your search &quot;{searchTerm}&quot;.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className={`min-w-full divide-y ${isDarkMode ? "divide-gray-700" : "divide-slate-300"}`}>

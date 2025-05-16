@@ -3,7 +3,6 @@ import { NextResponse } from 'next/server';
 import { connectToDB } from "../../../../utils/database"; // Adjust path
 import Inventory from "../../../../models/inventory";   // Adjust path
 import mongoose from 'mongoose';
-import { ObjectId } from 'mongodb'; // Import ObjectId for ID validation
 
 // --- GET a specific inventory item by ID ---
 export async function GET(request, { params }) {

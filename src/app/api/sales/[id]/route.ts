@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server';
 import { connectToDB } from "../../../../utils/database"; // Adjust path
 import Sales from "../../../../models/sales";             // Adjust path
-import Inventory from "../../../../models/inventory";     // Adjust path
 
 export async function DELETE(request, { params }) {
     try {

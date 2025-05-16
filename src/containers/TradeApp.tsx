@@ -609,7 +609,7 @@ export default function TradeApp() {
               <div>
                 <label htmlFor="itemSellingUnit" className={`block text-sm font-medium ${isDarkMode ? "text-slate-300" : "text-slate-700"} mb-1`}>Selling Unit (optional):</label>
                 <input type="text" id="itemSellingUnit" value={itemSellingUnit} onChange={(e) => setItemSellingUnit(e.target.value)} placeholder="e.g., piece" className={`w-full p-3 border rounded-lg transition-colors duration-200 ${isDarkMode ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:ring-sky-500 focus:border-sky-500" : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-600 focus:border-sky-600"}`} />
-                {itemSellingUnit && itemSellingUnit !== itemStockUnit && <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"} mt-1`}>e.g. Sell "pieces" from a "pack".</p>}
+                {itemSellingUnit && itemSellingUnit !== itemStockUnit && <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"} mt-1`}>e.g. Sell &quot;pieces&quot; from a &quot;pack&quot;.</p>}
                  {(!itemSellingUnit || itemSellingUnit === itemStockUnit) && <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"} mt-1`}>If same as stock unit, leave blank or set conversion to 1.</p>}
               </div>
               <div>
@@ -634,7 +634,7 @@ export default function TradeApp() {
                     className={`w-full p-3 border rounded-lg transition-colors duration-200 ${isDarkMode ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:ring-sky-500 focus:border-sky-500" : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-600 focus:border-sky-600"}`}
                 />
                 <p className={`text-xs ${isDarkMode ? "text-slate-400" : "text-slate-500"} mt-1`}>
-                    Standard price per selling unit. Can be overridden at sale. Manage all in 'Manage Selling Prices'.
+                    Standard price per selling unit. Can be overridden at sale. Manage all in &apos;Manage Selling Prices&apos;.
                 </p>
             </div>
 
@@ -813,7 +813,7 @@ export default function TradeApp() {
             </table>
             {inventory.filter(item => item.itemName.toLowerCase().includes(inventorySearchTerm.toLowerCase())).length === 0 && inventory.length > 0 && (
               <p className={`${isDarkMode ? "text-slate-400" : "text-slate-500"} p-4 text-center`}>
-                No items match your search "{inventorySearchTerm}".
+                No items match your search &quot;{inventorySearchTerm}&quot;.
               </p>
             )}
           </div>

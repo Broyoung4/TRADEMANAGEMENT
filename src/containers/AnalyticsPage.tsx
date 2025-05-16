@@ -220,7 +220,7 @@ const AnalyticsPage = ({ sales, inventory, onBack, isDarkMode }) => { // Added i
                   <Bar options={barChartOptions} data={profitPerItemChartData} />
                 </div>
               ) : (
-                <p className={`${isDarkMode ? "text-slate-400" : "text-slate-500"} text-center py-10`}>Not enough data for 'Profit per Item' chart.</p>
+                <p className={`${isDarkMode ? "text-slate-400" : "text-slate-500"} text-center py-10`}>Not enough data for &apos;Profit per Item&apos; chart.</p>
               )}
             </div>
             <div className={`${isDarkMode ? "bg-gray-800" : "bg-white"} p-6 rounded-xl shadow-lg transition-colors duration-300`}>
@@ -229,7 +229,7 @@ const AnalyticsPage = ({ sales, inventory, onBack, isDarkMode }) => { // Added i
                   <Line options={lineChartOptions} data={dailyProfitChartData} />
                 </div>
               ) : (
-                <p className={`${isDarkMode ? "text-slate-400" : "text-slate-500"} text-center py-10`}>Not enough data for 'Daily Profit' chart.</p>
+                <p className={`${isDarkMode ? "text-slate-400" : "text-slate-500"} text-center py-10`}>Not enough data for &apos;Daily Profit&apos; chart.</p>
               )}
             </div>
           </section>

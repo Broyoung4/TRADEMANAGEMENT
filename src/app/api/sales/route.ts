@@ -4,7 +4,7 @@ import { connectToDB } from "../../../utils/database"; // Adjust path
 import Sales from "../../../models/sales";           // Adjust path (ensure this model has itemName, unitSold, costPriceAtTimeOfSale fields)
 import Inventory from "../../../models/inventory";     // Adjust path
 
-export const GET = async (request) => {
+export const GET = async () => {
     try {
         await connectToDB();
         // The 'populate' here is for convenience if you want to access CURRENT inventory details alongside the sale.
