@@ -169,64 +169,7 @@ export default function TradeApp() {
     }
   };
 
-/*   const handleAddItemToInventory = async () => {
-    if (!itemNamed || !itemQuantity || !itemCostPrice || !itemStockUnit) {
-      alert("Please fill in Item Name, Stock Quantity, Cost Price, and Stock Unit.");
-      return;
-    }
-    const quantity = parseFloat(itemQuantity);
-    const costPrice = parseFloat(itemCostPrice);
-    const conversionFactor = parseFloat(itemConversionFactor);
-    const defaultSellingPrice = itemDefaultSellingPrice ? parseFloat(itemDefaultSellingPrice) : undefined;
-
-      if (isNaN(quantity) || quantity <= 0) { alert("Invalid quantity."); return; }
-      if (isNaN(costPrice) || costPrice <= 0) { alert("Invalid cost price."); return; }
-      if (isNaN(conversionFactor) || conversionFactor <= 0) { alert("Invalid conversion factor."); return; }
-      if (defaultSellingPrice !== undefined && (isNaN(defaultSellingPrice) || defaultSellingPrice < 0)) {
-        alert("Please enter a valid default selling price or leave it blank.");
-        return;
-      }
-
-    const newItemPayload = {
-      itemName: itemNamed.trim(),
-      quantity,
-      price: costPrice,
-      stockUnit: itemStockUnit.trim(),
-      sellingUnit: itemSellingUnit.trim() || itemStockUnit.trim(),
-      conversionFactor,
-      defaultSellingPricePerUnit: defaultSellingPrice,
-    };
-
-    try {
-      const response = await fetch("/api/inventory", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(newItemPayload),
-      });
-      const returnedItem = await response.json();
-      if (response.ok) {
-        const newItemWithDefaults = {
-          ...returnedItem,
-          stockUnit: returnedItem.stockUnit || "unit(s)",
-          sellingUnit: returnedItem.sellingUnit || returnedItem.stockUnit || "unit(s)",
-          conversionFactor: Number(returnedItem.conversionFactor) || 1,
-          price: Number(returnedItem.price) || 0,
-          defaultSellingPricePerUnit: Number(returnedItem.defaultSellingPricePerUnit) || 0,
-        };
-        setInventory((prev) => [...prev, newItemWithDefaults]);
-        alert(`"${returnedItem.itemName}" added.`);
-        resetInventoryForm();
-      } else {
-        alert(`Failed to add item: ${returnedItem.message || response.statusText}`);
-      }
-    } catch (error) {
-      alert(`Error adding item: ${error.message}`);
-    }
-  }; */
-
-// Revised handleAddItemToInventory in TradeApp.js
   const handleAddItemToInventory = async () => {
-    // --- Basic Validation (same as before) ---
     if (!itemNamed || !itemQuantity || !itemCostPrice || !itemStockUnit) {
       alert("Please fill in Item Name, Stock Quantity, Cost Price, and Stock Unit.");
       return;
@@ -543,31 +486,7 @@ export default function TradeApp() {
     }
   };
 
-  // --- RENDER LOGIC ---
-/*   if (currentView === "analytics") {
-    return (
-      <AnalyticsPage
-        sales={sales}
-        inventory={inventory}
-        onBack={() => setCurrentView("dashboard")}
-        formatCurrency={formatCurrency}
-        isDarkMode={isDarkMode}
-      />
-    );
-  }
-  if (currentView === "priceList") {
-    return (
-      <SellingPriceList
-        inventory={inventory}
-        onBack={() => setCurrentView("dashboard")}
-        onUpdatePrice={handleUpdateSellingPriceInDB}
-        formatCurrency={formatCurrency}
-        isDarkMode={isDarkMode}
-      />
-    );
-  }
-
-   */
+// Filter inventory based on search term
   const itemsAvailableForSale = inventory.filter(
     (item) => item.quantity * (Number(item.conversionFactor) || 1) > 0.0001 // Check against a very small number for float precision
   );
@@ -584,6 +503,7 @@ export default function TradeApp() {
     }
   }, [selectedItemId, inventory]);
 
+  // --- RENDER LOGIC ---
   const renderView = () => {
     if (currentView === "analytics") {
       return (
@@ -879,9 +799,6 @@ export default function TradeApp() {
                         <td className={`px-4 py-3 whitespace-nowrap text-sm ${isDarkMode ? "text-gray-300" : "text-slate-600"}`}>{item.sellingUnit}</td>
                         <td className={`px-4 py-3 whitespace-nowrap text-sm ${isDarkMode ? "text-gray-300" : "text-slate-600"}`}>{conversion}</td>
                         <td className={`px-4 py-3 whitespace-nowrap text-sm ${isDarkMode ? "text-gray-300" : "text-slate-600"}`}>{totalSellingUnits} {item.sellingUnit || item.stockUnit}</td>
-                        {/* <td className={`px-4 py-3 whitespace-nowrap text-sm ${isDarkMode ? "text-gray-300" : "text-slate-600"}`}>
-                          {item.defaultSellingPricePerUnit > 0 ? `${formatCurrency(item.defaultSellingPricePerUnit)} / ${item.sellingUnit || item.stockUnit}` : 'N/A'}
-                        </td> */}
                         <td className={`px-4 py-3 whitespace-nowrap text-sm ${isDarkMode ? "text-gray-300" : "text-slate-600"}`}>
                           {item.defaultSellingPricePerUnit > 0 ? `${formatCurrency(item.defaultSellingPricePerUnit/conversion)} / ${item.sellingUnit || item.stockUnit}` : 'N/A'}
                         </td>
