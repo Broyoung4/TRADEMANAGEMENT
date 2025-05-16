@@ -8,6 +8,10 @@ console.log({
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
 })
 
+if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+    throw new Error('Missing Google OAuth environment variables');
+}
+
 const handler = NextAuth({
     providers: [
         GoogleProvider({
