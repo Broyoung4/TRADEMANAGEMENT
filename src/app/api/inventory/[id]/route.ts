@@ -1,14 +1,14 @@
 // /api/inventory/[id]/route.js
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 import { connectToDB } from "../../../../utils/database"; // Adjust path
 import Inventory from "../../../../models/inventory";   // Adjust path
 import mongoose from 'mongoose';
 
 // --- GET a specific inventory item by ID ---
-export async function GET( { params }) {
+export async function GET(request: NextRequest, context: { params: { id: string } }) {
     try {
         await connectToDB();
-        const { id } = params;
+        const { id } = context.params;
 
         if (!id) {
             return NextResponse.json({ message: "Inventory item ID is required" }, { status: 400 });
@@ -36,123 +36,10 @@ export async function GET( { params }) {
 
 
 // --- UPDATE an existing inventory item (PUT) ---
-/* export async function PUT(request, { params }) {
-    const { id } = params;
-    if (!id) {
-        return NextResponse.json({ message: 'Item ID is required' }, { status: 400 });
-    }
-     if (id.length !== 24) {
-        return NextResponse.json({ message: "Invalid inventory item ID format" }, { status: 400 });
-    }
-
-    try {
-        await connectToDB();
-        const body = await request.json();
-        const {
-            itemName,
-            price, // cost price per stock unit
-            stockUnit,
-            sellingUnit,
-            conversionFactor,
-            defaultSellingPricePerUnit, // New field
-            supplier,
-            // IMPORTANT: Quantity is generally NOT updated via this PUT endpoint.
-            // It's adjusted via sales or dedicated stock addition operations (like the POST to /api/inventory).
-        } = body;
-
-        const updateData = {};
-
-        // Conditionally add fields to updateData if they are provided in the body
-        if (itemName && itemName.trim() !== '') {
-            updateData.itemName = itemName.trim();
-        }
-        if (price !== undefined) {
-            const numPrice = parseFloat(price);
-            if (isNaN(numPrice) || numPrice < 0) {
-                return NextResponse.json({ message: 'Cost price must be a non-negative number.' }, { status: 400 });
-            }
-            updateData.price = numPrice;
-        }
-        if (stockUnit && stockUnit.trim() !== '') {
-            updateData.stockUnit = stockUnit.trim();
-        }
-
-        // Handle sellingUnit and conversionFactor carefully
-        let finalSellingUnit, finalConversionFactor;
-        if (sellingUnit !== undefined || stockUnit !== undefined) { // If either unit is being potentially changed
-            const currentItem = await Inventory.findById(id); // Get current item to reference its units if needed
-            if (!currentItem) {
-                 return NextResponse.json({ message: 'Inventory item not found for unit update reference' }, { status: 404 });
-            }
-            const effectiveStockUnit = updateData.stockUnit || currentItem.stockUnit;
-            finalSellingUnit = (sellingUnit?.trim() || effectiveStockUnit); // Default to new or current stockUnit
-
-            if (conversionFactor !== undefined) {
-                const numConversionFactor = parseFloat(conversionFactor);
-                 if (isNaN(numConversionFactor) || numConversionFactor <= 0) {
-                     return NextResponse.json({ message: 'Conversion factor must be a positive number if provided.' }, { status: 400 });
-                 }
-                finalConversionFactor = numConversionFactor;
-            } else {
-                finalConversionFactor = currentItem.conversionFactor; // Keep existing if not provided
-            }
-
-            // If selling unit becomes same as stock unit, conversion factor must be 1
-            if (finalSellingUnit.toLowerCase() === effectiveStockUnit.toLowerCase()) {
-                finalConversionFactor = 1;
-            }
-            updateData.sellingUnit = finalSellingUnit;
-            updateData.conversionFactor = finalConversionFactor;
-        }
 
 
-        if (defaultSellingPricePerUnit !== undefined && defaultSellingPricePerUnit !== null && defaultSellingPricePerUnit !== '') {
-            const numDefaultSellingPrice = parseFloat(defaultSellingPricePerUnit);
-            if (isNaN(numDefaultSellingPrice) || numDefaultSellingPrice < 0) {
-                return NextResponse.json({ message: 'Default Selling Price must be a non-negative number if provided.' }, { status: 400 });
-            }
-            updateData.defaultSellingPricePerUnit = numDefaultSellingPrice;
-        } else if (defaultSellingPricePerUnit === null || defaultSellingPricePerUnit === '') {
-            // Allow clearing the default selling price
-            updateData.defaultSellingPricePerUnit = 0; // Or null, depending on schema/preference
-        }
-
-
-        if (supplier !== undefined) {
-            updateData.supplier = supplier.trim();
-        }
-
-        if (Object.keys(updateData).length === 0) {
-            return NextResponse.json({ message: 'No valid fields provided for update.' }, { status: 400 });
-        }
-
-        const updatedItem = await Inventory.findByIdAndUpdate(
-            id,
-            { $set: updateData }, // Use $set for partial updates
-            { new: true, runValidators: true }
-        );
-
-        if (!updatedItem) {
-            return NextResponse.json({ message: 'Inventory item not found or failed to update' }, { status: 404 });
-        }
-
-        return NextResponse.json({ success: true, data: updatedItem }, { status: 200 }); // Changed to match frontend expectation
-    } catch (error) {
-        console.error(`Error updating inventory item ${id}:`, error);
-        if (error.name === 'ValidationError') {
-            return NextResponse.json({ message: "Validation Error", errors: error.errors }, { status: 400 });
-        }
-        if (error.name === 'CastError') {
-            return NextResponse.json({ message: "Invalid ID format or data type.", error: error.message }, { status: 400 });
-        }
-        return NextResponse.json({ message: `Failed to update inventory item`, error: error.message }, { status: 500 });
-    }
-};
-
- */
-export async function PUT(request, { params }) {
-    const { id } = params;
-
+export async function PUT(request: NextRequest, context: { params: { id: string } }) {
+    const { id } = context.params;
     // Validate ID format early
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return NextResponse.json({ message: "Invalid inventory item ID format" }, { status: 400 });
@@ -326,12 +213,9 @@ export async function PUT(request, { params }) {
 };
 
 // --- DELETE an inventory item by ID ---
-export const DELETE = async ( { params }) => {
-    const { id } = params;
-    if (!id) {
-        return NextResponse.json({ message: 'Item ID is required' }, { status: 400 });
-    }
-     if (id.length !== 24) { // Basic check for Mongoose ObjectId length
+export const DELETE = async (request: NextRequest, context: { params: { id: string } }) => {
+    const { id } = context.params;
+    if (id.length !== 24) { // Basic check for Mongoose ObjectId length
         return NextResponse.json({ message: "Invalid inventory item ID format" }, { status: 400 });
     }
     try {
@@ -345,7 +229,7 @@ export const DELETE = async ( { params }) => {
         return NextResponse.json({ message: 'Inventory item deleted successfully', deletedId: id }, { status: 200 });
     } catch (error) {
         console.error(`Error deleting inventory item ${id}:`, error);
-         if (error.name === 'CastError' && error.path === '_id') {
+        if (error.name === 'CastError' && error.path === '_id') {
             return NextResponse.json({ message: "Invalid inventory item ID format" }, { status: 400 });
         }
         return NextResponse.json({ message: `Failed to delete inventory item`, error: error.message }, { status: 500 });
