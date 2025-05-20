@@ -1,15 +1,25 @@
-// Filename: app/api/sales/[id]/route.js
+// /api/sales/[id]/route.js
 import { NextResponse } from 'next/server';
-import { connectToDB } from "../../../../utils/database"; // Adjust path
-import Sales from "../../../../models/sales";             // Adjust path
+import { connectToDB } from "../../../../utils/database";
+import Sales from "../../../../models/sales";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Adjust this path
+import mongoose from 'mongoose';
 
-export async function DELETE(request, { params }) {
+
+export async function DELETE(request, { params }) { // request is used by getServerSession
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || !session.user.id) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    const loggedInUserId = session.user.id;
+
     try {
         await connectToDB();
-        const { id: saleId } = params; // Sale ID from the dynamic route segment
+        const { id: saleId } = params;
 
-        if (!saleId) {
-            return NextResponse.json({ message: "Sale ID is required" }, { status: 400 });
+        if (!saleId || !mongoose.Types.ObjectId.isValid(saleId)) {
+            return NextResponse.json({ message: "Invalid or missing Sale ID" }, { status: 400 });
         }
 
         const saleToDelete = await Sales.findById(saleId);
@@ -17,29 +27,30 @@ export async function DELETE(request, { params }) {
             return NextResponse.json({ message: "Sale record not found" }, { status: 404 });
         }
 
-        // Optional: Restore inventory quantity.
-        // The frontend currently doesn't expect this and adjusts profit locally.
-        // If you enable this, ensure frontend expectations match.
-        // For now, I'm commenting it out as per your frontend's current alert message.
-        /*
-        const inventoryItem = await Inventory.findById(saleToDelete.itemId);
-        if (inventoryItem) {
-            const conversionFactor = Number(inventoryItem.conversionFactor) || 1;
-            const quantityToRestoreInStockUnits = saleToDelete.quantitySold / conversionFactor;
-            inventoryItem.quantity += quantityToRestoreInStockUnits;
-            await inventoryItem.save();
+        // Authorization: Check if the sale record belongs to the logged-in user
+        if (saleToDelete.userId.toString() !== loggedInUserId) {
+            return NextResponse.json({ message: "Forbidden: You do not own this resource" }, { status: 403 });
         }
-        */
-       
-        await Sales.findByIdAndDelete(saleId);
 
-        return NextResponse.json({ message: "Sale record deleted successfully. Profit adjusted on client-side. Inventory NOT automatically restocked by this backend operation.", deletedId: saleId }, { status: 200 });
+        // Note: The frontend message says "Inventory NOT automatically restocked".
+        // If you were to implement restocking, you'd also need to check ownership of the inventory item.
+        // For example:
+        // const inventoryItem = await Inventory.findById(saleToDelete.itemId);
+        // if (inventoryItem && inventoryItem.userId.toString() !== loggedInUserId) {
+        //     return NextResponse.json({ message: "Cannot restock inventory for an item you do not own." }, { status: 403 });
+        // }
+        // Then proceed with restocking if inventoryItem.userId matches.
+
+        await Sales.findByIdAndDelete(saleId); // Authorized, so proceed with deletion.
+
+        return NextResponse.json({
+            message: "Sale record deleted successfully. Profit adjusted on client-side. Inventory NOT automatically restocked by this backend operation.",
+            deletedId: saleId
+        }, { status: 200 });
 
     } catch (error) {
         console.error(`Error deleting sale record with ID ${params.id}:`, error);
-        if (error.name === 'CastError' && error.path === '_id') {
-            return NextResponse.json({ message: "Invalid sale ID format" }, { status: 400 });
-        }
+        // CastError is covered by mongoose.Types.ObjectId.isValid check
         return NextResponse.json({ message: "Failed to delete sale record", error: error.message }, { status: 500 });
     }
 }

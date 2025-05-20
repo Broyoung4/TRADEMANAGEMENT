@@ -1,3 +1,4 @@
+// app/models/user.js
 import { Schema, model, models } from "mongoose";
 
 const UserSchema = new Schema({
@@ -13,10 +14,9 @@ const UserSchema = new Schema({
       /^(?=.{3,20}$)(?![_.])(?!.*[_.]{2})[a-zA-Z0-9._]+(?<![_.])$/,
       "Please enter a valid username",
     ],
-
-    image: {
-      type: String,
-    },
+  }, // Closing bracket for username object was missing here in your original if image was intended to be separate
+  image: { // Moved image to be a top-level field
+    type: String,
   },
 });
 

@@ -8,16 +8,20 @@ const SalesSchema = new Schema(
       type: String,
       required: true,
     },
-    quantitySold: { type: Number, required: true }, // Quantity in sellingUnits
-    sellingPrice: { type: Number, required: true }, // Price per sellingUnit
+    quantitySold: { type: Number, required: true },
+    sellingPrice: { type: Number, required: true },
     profit: { type: Number, required: true },
     saleDate: { type: Date, default: Date.now },
-    unitSold: { type: String, required: [true, "Unit sold is required."] }, // The selling unit at the time of sale
+    unitSold: { type: String, required: [true, "Unit sold is required."] },
     costPriceAtTimeOfSale: {
       type: Number,
       required: [true, "Cost price at time of sale is required."],
-    }, // Cost per sellingUnit
-    // creator: { type: Schema.Types.ObjectId, ref: 'User' }, // If you have user association
+    },
+    userId: { // <--- ADD THIS FIELD (uncommented and named userId)
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        required: [true, 'User ID is required for sale record.'] // Added required validation
+    },
   },
   { timestamps: true }
 );

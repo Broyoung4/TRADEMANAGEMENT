@@ -1,155 +1,126 @@
 // /api/inventory/route.js
 import { NextResponse } from 'next/server';
-import { connectToDB } from "../../../utils/database"; // Adjust path as necessary
-import Inventory from "../../../models/inventory";    // Adjust path as necessary
+import { connectToDB } from "../../../utils/database";
+import Inventory from "../../../models/inventory";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Adjust this path
 
 export const GET = async () => {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || !session.user.id) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    const loggedInUserId = session.user.id;
+
     try {
         await connectToDB();
-        const inventories = await Inventory.find({})
-            // .populate('creator') // Uncomment if needed
-            .sort({ updatedAt: -1 }); // Sort by last update
+        const inventories = await Inventory.find({ userId: loggedInUserId }) // Filter by userId
+            .sort({ updatedAt: -1 });
 
         return NextResponse.json(inventories, { status: 200 });
     } catch (error) {
-        console.error('Error fetching inventories:', error);
-        return NextResponse.json({ message: 'Failed to fetch all inventories', error: error.message }, { status: 500 });
+        console.error('Error fetching user inventories:', error);
+        return NextResponse.json({ message: 'Failed to fetch user inventories', error: error.message }, { status: 500 });
     }
 };
 
-
 export const POST = async (request) => {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || !session.user.id) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+    const loggedInUserId = session.user.id;
+
     try {
         await connectToDB();
         const body = await request.json();
         const {
-            itemName,
-            quantity,
-            price,
-            stockUnit,
-            sellingUnit,
-            conversionFactor,
-            defaultSellingPricePerUnit,
-            supplier,
-            // creator
+            itemName, quantity, price, stockUnit, sellingUnit,
+            conversionFactor, defaultSellingPricePerUnit, supplier,
         } = body;
 
-        console.log('[API INVENTORY POST] Received request body:', body); // Log incoming data
+        console.log('[API INVENTORY POST] User:', loggedInUserId, 'Received request body:', body);
 
         // --- Basic Validations (mostly unchanged) ---
         if (!itemName || !itemName.trim() || quantity === undefined || price === undefined || !stockUnit || !stockUnit.trim()) {
-            console.error('[API INVENTORY POST] Validation Error: Missing required fields.');
             return NextResponse.json({ message: 'Item Name, Quantity, Cost Price, and Stock Unit are required.' }, { status: 400 });
         }
         const numQuantity = parseFloat(quantity);
         if (isNaN(numQuantity) || numQuantity < 0) {
-             console.error('[API INVENTORY POST] Validation Error: Invalid quantity.');
             return NextResponse.json({ message: 'Quantity to add must be a non-negative number.' }, { status: 400 });
         }
         const numPrice = parseFloat(price);
         if (isNaN(numPrice) || numPrice < 0) {
-             console.error('[API INVENTORY POST] Validation Error: Invalid cost price.');
             return NextResponse.json({ message: 'Cost price must be a non-negative number.' }, { status: 400 });
         }
-        // ... (rest of validation for conversionFactor, sellingUnit, defaultSellingPrice - unchanged) ...
         let numConversionFactor = parseFloat(conversionFactor);
-        if (isNaN(numConversionFactor) || numConversionFactor <= 0) {
-            numConversionFactor = 1;
-        }
+        if (isNaN(numConversionFactor) || numConversionFactor <= 0) numConversionFactor = 1;
         const finalSellingUnit = (sellingUnit?.trim() || stockUnit.trim());
         const finalConversionFactor = (finalSellingUnit.toLowerCase() === stockUnit.trim().toLowerCase()) ? 1 : numConversionFactor;
         let numDefaultSellingPrice;
         if (defaultSellingPricePerUnit !== undefined && defaultSellingPricePerUnit !== null && defaultSellingPricePerUnit !== '') {
             numDefaultSellingPrice = parseFloat(defaultSellingPricePerUnit);
             if (isNaN(numDefaultSellingPrice) || numDefaultSellingPrice < 0) {
-                 console.error('[API INVENTORY POST] Validation Error: Invalid default selling price.');
                 return NextResponse.json({ message: 'Default Selling Price must be a non-negative number if provided.' }, { status: 400 });
             }
         }
         // --- End Validations ---
 
-
-        const searchItemName = itemName.trim(); // Use a variable for logging consistency
+        const searchItemName = itemName.trim();
         const searchStockUnit = stockUnit.trim();
-        console.log(`[API INVENTORY POST] Attempting to find existing item with Name: "${searchItemName}" (Case-Insensitive)`);
-
-        // Case-insensitive search for existing item (using trimmed name)
-       /*  const existingItem = await Inventory.findOne({
-            itemName: { $regex: `^${searchItemName}$`, $options: 'i' }
-            // If needed later, add more criteria like:
-            // stockUnit: { $regex: `^${stockUnit.trim()}$`, $options: 'i' },
-            // creator: creatorId,
-        }); */
+        console.log(`[API INVENTORY POST] User: ${loggedInUserId}, Attempting to find existing item with Name: "${searchItemName}", Unit: "${searchStockUnit}"`);
 
         const existingItem = await Inventory.findOne({
             itemName: searchItemName.toLowerCase(),
-            stockUnit: searchStockUnit.toLowerCase()
-        }).collation({ locale: 'en', strength: 2 }); // Ensure case-insensitive collation
+            stockUnit: searchStockUnit.toLowerCase(),
+            userId: loggedInUserId // Crucial: Search within the current user's inventory
+        }).collation({ locale: 'en', strength: 2 });
 
         if (existingItem) {
-            // === Item exists - UPDATE ===
-            console.log(`[API INVENTORY POST] FOUND existing item. ID: ${existingItem._id}. Name in DB: "${existingItem.itemName}". Updating...`);
-
-            // Store old values for weighted average calculation
+            console.log(`[API INVENTORY POST] User: ${loggedInUserId}, FOUND existing item. ID: ${existingItem._id}. Updating...`);
             const oldQuantity = Number(existingItem.quantity) || 0;
             const oldCostPrice = Number(existingItem.price) || 0;
             const addedQuantity = numQuantity;
             const newBatchCostPrice = numPrice;
-
-            // Calculate new total quantity
             const newTotalQuantity = oldQuantity + addedQuantity;
-
-            // Calculate new weighted average cost price
             let newWeightedAveragePrice;
             if (newTotalQuantity > 0) {
                 const oldValue = oldQuantity * oldCostPrice;
                 const addedValue = addedQuantity * newBatchCostPrice;
                 newWeightedAveragePrice = (oldValue + addedValue) / newTotalQuantity;
             } else {
-                newWeightedAveragePrice = newBatchCostPrice; // Or 0
+                newWeightedAveragePrice = newBatchCostPrice;
             }
-
-            // Update item properties
             existingItem.quantity = newTotalQuantity;
             existingItem.price = newWeightedAveragePrice;
-
-            // Update other details (overwrites with new batch details - review if this is desired)
-            existingItem.stockUnit = stockUnit.trim();
+            existingItem.stockUnit = stockUnit.trim(); // Keep original casing from user input
             existingItem.sellingUnit = finalSellingUnit;
             existingItem.conversionFactor = finalConversionFactor;
-            if (numDefaultSellingPrice !== undefined) {
-                existingItem.defaultSellingPricePerUnit = numDefaultSellingPrice;
-            }
-             if (supplier) existingItem.supplier = supplier.trim();
-             // existingItem.creator = creatorId; // if applicable
+            if (numDefaultSellingPrice !== undefined) existingItem.defaultSellingPricePerUnit = numDefaultSellingPrice;
+            if (supplier) existingItem.supplier = supplier.trim();
+            // userId remains the same
 
             await existingItem.save();
-            console.log(`[API INVENTORY POST] SUCCESS updated item "${existingItem.itemName}". New Qty: ${existingItem.quantity}, New Avg Cost: ${existingItem.price.toFixed(2)}`);
+            console.log(`[API INVENTORY POST] User: ${loggedInUserId}, SUCCESS updated item "${existingItem.itemName}".`);
             return NextResponse.json(existingItem, { status: 200 });
-
         } else {
-            // === Item doesn't exist - CREATE ===
-            console.log(`[API INVENTORY POST] DID NOT FIND existing item with Name: "${searchItemName}". Creating new item.`);
+            console.log(`[API INVENTORY POST] User: ${loggedInUserId}, DID NOT FIND existing item. Creating new item.`);
             const newItemData = {
-                itemName: searchItemName, // Use the trimmed name
+                itemName: searchItemName,
                 quantity: numQuantity,
                 price: numPrice,
                 stockUnit: stockUnit.trim(),
                 sellingUnit: finalSellingUnit,
                 conversionFactor: finalConversionFactor,
-                // supplier: supplier ? supplier.trim() : undefined,
-                // creator: creatorId,
+                userId: loggedInUserId, // Assign current user's ID
             };
             if (supplier) newItemData.supplier = supplier.trim();
-            if (numDefaultSellingPrice !== undefined) {
-                newItemData.defaultSellingPricePerUnit = numDefaultSellingPrice;
-            }
+            if (numDefaultSellingPrice !== undefined) newItemData.defaultSellingPricePerUnit = numDefaultSellingPrice;
 
             const newItem = await Inventory.create(newItemData);
-            console.log(`[API INVENTORY POST] SUCCESS created new item "${newItem.itemName}". Qty: ${newItem.quantity}, Cost: ${newItem.price.toFixed(2)}`);
+            console.log(`[API INVENTORY POST] User: ${loggedInUserId}, SUCCESS created new item "${newItem.itemName}".`);
             return NextResponse.json(newItem, { status: 201 });
         }
-
     } catch (error) {
         console.error('[API INVENTORY POST] Error processing inventory item:', error);
         if (error.name === 'ValidationError') {
@@ -158,4 +129,3 @@ export const POST = async (request) => {
         return NextResponse.json({ message: 'Failed to process inventory item', error: error.message }, { status: 500 });
     }
 };
-
