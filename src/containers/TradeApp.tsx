@@ -1045,37 +1045,6 @@ export default function TradeApp() {
                     >
                       -- Select an item --
                     </option>
-                    {/* {itemsAvailableForSale.map((item) => {
-                      const conversion = Number(item.conversionFactor) || 1;
-                      const availableInSelling = (
-                        item.quantity * conversion
-                      ).toFixed(2);
-                      const costPerSelling = item.price / conversion;
-                      const defaultPriceInfo =
-                        item.defaultSellingPricePerUnit > 0
-                          ? ` (Def. Price: ${formatCurrency(
-                              item.defaultSellingPricePerUnit
-                            )})`
-                          : "";
-                      return (
-                        <option
-                          key={item._id}
-                          value={item._id}
-                          className={
-                            isDarkMode
-                              ? "bg-gray-700 text-gray-200"
-                              : "bg-white text-slate-900"
-                          }
-                        >
-                          {item.itemName} (Avail: {availableInSelling}{" "}
-                          {item.sellingUnit || item.stockUnit}, Cost:{" "}
-                          {formatCurrency(costPerSelling)} per{" "}
-                          {item.sellingUnit || item.stockUnit}
-                          {defaultPriceInfo})
-                        </option>
-                      );
-                    })} */}
-                    {/* --- MODIFIED PART: Map over the new filtered list --- */}
                                      {" "}
                     {filteredItemsForSale.map((item) => {
                       const conversion = Number(item.conversionFactor) || 1;
@@ -1090,10 +1059,10 @@ export default function TradeApp() {
                           : "";
                       return (
                         <option key={item._id} value={item._id}>
-                                                  {item.itemName} (
-                          {availableInSelling} {item.sellingUnit} available)
+                          {item.itemName} ({availableInSelling}{" "}
+                          {item.sellingUnit} available)
                           {defaultPriceInfo}                     {" "}
-                        </option>
+                        </option> 
                       );
                     })}
                   </select>
