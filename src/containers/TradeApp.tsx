@@ -1062,7 +1062,7 @@ export default function TradeApp() {
                           {item.itemName} ({availableInSelling}{" "}
                           {item.sellingUnit} available)
                           {defaultPriceInfo}                     {" "}
-                        </option> 
+                        </option>
                       );
                     })}
                   </select>
