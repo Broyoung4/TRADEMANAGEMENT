@@ -21,6 +21,17 @@ export const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
+
+  session: {
+    maxAge: 5 * 60 * 60,     // 18000 seconds = 5 hours
+    updateAge: 60 * 60,      // optional: only re-save/refresh session once per hour
+  },
+
+  // if using JWT sessions, keep token lifetime aligned
+  jwt: {
+    maxAge: 5 * 60 * 60,     // 18000 seconds
+  }, 
+  
   callbacks: {
     async session({ session }) {
       if (!session.user || !session.user.email) {
