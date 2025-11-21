@@ -21,35 +21,50 @@ export const authOptions = {
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
     }),
   ],
-
+  // Session configuration for "Remember me" functionality
   session: {
-    maxAge: 5 * 60 * 60,     // 18000 seconds = 5 hours
-    updateAge: 60 * 60,      // optional: only re-save/refresh session once per hour
+    strategy: "jwt" as const, // Use JWT instead of database sessions
+    maxAge: 30 * 24 * 60 * 60, // 30 days - long session duration for "Remember me"
+    updateAge: 24 * 60 * 60, // Update session once per day
   },
-
-  // if using JWT sessions, keep token lifetime aligned
+  // JWT configuration
   jwt: {
-    maxAge: 5 * 60 * 60,     // 18000 seconds
-  }, 
-  
+    maxAge: 30 * 24 * 60 * 60, // 30 days - matches session maxAge
+  },
+  // Pages configuration
+  pages: {
+    signIn: "/login", // Custom login page (optional)
+  },
   callbacks: {
-    async session({ session }) {
+    // JWT callback - runs when JWT is created or updated
+    async jwt({ token, user }: any) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    // Session callback - runs when session is checked
+    async session({ session, token }: any) {
+      if (session.user) {
+        session.user.id = token.id;
+      }
+
       if (!session.user || !session.user.email) {
         return session;
       }
 
+      await connectToDB();
       const sessionUser = await User.findOne({
         email: session.user.email,
       });
 
       if (sessionUser) {
-        // Ensure sessionUser is found
         session.user.id = sessionUser._id.toString();
       }
 
       return session;
     },
-    async signIn({ profile }) {
+    async signIn({ profile }: any) {
       if (!profile) {
         console.error("SignIn callback: Profile or email missing.");
         return false;
@@ -68,7 +83,7 @@ export const authOptions = {
             username: username,
           });
           if (potentialExistingUsername) {
-            username = `<span class="math-inline">\{username\}</span>{Math.floor(Math.random() * 10000)}`;
+            username = `${username}${Math.floor(Math.random() * 10000)}`;
           }
 
           await User.create({
