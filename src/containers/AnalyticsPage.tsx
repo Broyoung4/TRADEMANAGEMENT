@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useContext } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,6 +13,90 @@ import {
   ArcElement,
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
+import { useRouter } from 'next/navigation';
+import { ThemeContext } from '@/components/Provider';
+
+// Import THEMES from Nav for consistency
+const THEMES = {
+  midnight: {
+    name: "Midnight Blue",
+    dark: {
+      bg: "bg-slate-950",
+      bgSecondary: "bg-slate-900",
+      text: "text-slate-100",
+      textSecondary: "text-slate-400",
+      border: "border-slate-700",
+      accent: "text-blue-400",
+      accentBg: "bg-blue-900",
+      accentLight: "bg-blue-800",
+    },
+  },
+  forest: {
+    name: "Forest Green",
+    dark: {
+      bg: "bg-emerald-950",
+      bgSecondary: "bg-emerald-900",
+      text: "text-emerald-50",
+      textSecondary: "text-emerald-400",
+      border: "border-emerald-700",
+      accent: "text-green-400",
+      accentBg: "bg-green-900",
+      accentLight: "bg-green-800",
+    },
+  },
+  sunset: {
+    name: "Sunset Orange",
+    dark: {
+      bg: "bg-orange-950",
+      bgSecondary: "bg-orange-900",
+      text: "text-orange-50",
+      textSecondary: "text-orange-300",
+      border: "border-orange-700",
+      accent: "text-amber-400",
+      accentBg: "bg-amber-900",
+      accentLight: "bg-amber-800",
+    },
+  },
+  amethyst: {
+    name: "Amethyst Purple",
+    dark: {
+      bg: "bg-purple-950",
+      bgSecondary: "bg-purple-900",
+      text: "text-purple-50",
+      textSecondary: "text-purple-300",
+      border: "border-purple-700",
+      accent: "text-fuchsia-400",
+      accentBg: "bg-fuchsia-900",
+      accentLight: "bg-fuchsia-800",
+    },
+  },
+  crimson: {
+    name: "Crimson Red",
+    dark: {
+      bg: "bg-red-950",
+      bgSecondary: "bg-red-900",
+      text: "text-red-50",
+      textSecondary: "text-red-300",
+      border: "border-red-700",
+      accent: "text-rose-400",
+      accentBg: "bg-rose-900",
+      accentLight: "bg-rose-800",
+    },
+  },
+  ocean: {
+    name: "Ocean Cyan",
+    dark: {
+      bg: "bg-cyan-950",
+      bgSecondary: "bg-cyan-900",
+      text: "text-cyan-50",
+      textSecondary: "text-cyan-300",
+      border: "border-cyan-700",
+      accent: "text-cyan-400",
+      accentBg: "bg-cyan-900",
+      accentLight: "bg-cyan-800",
+    },
+  },
+};
 
 ChartJS.register(
   CategoryScale,
@@ -115,14 +199,53 @@ const getDailyProfitData = (sales, isDarkMode) => { // Pass isDarkMode
   };
 };
 
-const AnalyticsPage = ({ sales, inventory, onBack, isDarkMode }) => { // Added isDarkMode
+const AnalyticsPage = ({ sales: propsSales, inventory: propsInventory, onBack: propsOnBack, isDarkMode: propsIsDarkMode }) => {
+  const router = useRouter();
+  const themeContext = useContext(ThemeContext);
+  const { isDarkMode: contextIsDarkMode = false, currentTheme = "midnight" } = themeContext || {};
+  
+  // Use provided props or context values
+  const isDarkMode = propsIsDarkMode ?? contextIsDarkMode;
+  const [sales, setSales] = useState(propsSales || []);
+  const [inventory, setInventory] = useState(propsInventory || []);
+  const [loading, setLoading] = useState(!propsSales);
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const today = new Date();
     return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
   });
 
+  const onBack = propsOnBack || (() => router.back());
+  const themeConfig = isDarkMode ? THEMES[currentTheme]?.dark : {};
+
+  // Fetch sales data if not provided as props
+  useEffect(() => {
+    if (!propsSales) {
+      const fetchData = async () => {
+        try {
+          const response = await fetch('/api/sales');
+          const data = await response.json();
+          setSales(data);
+          setLoading(false);
+        } catch (error) {
+          console.error('Failed to fetch sales:', error);
+          setLoading(false);
+        }
+      };
+      fetchData();
+    }
+  }, [propsSales]);
+
+  if (loading) {
+    return (
+      <div className={`p-8 min-h-screen flex items-center justify-center ${isDarkMode ? "bg-gray-900" : "bg-slate-100"}`}>
+        <p className={isDarkMode ? "text-gray-200" : "text-slate-700"}>Loading analytics...</p>
+      </div>
+    );
+  }
+
   // Filter sales by selected month
   const filteredSales = useMemo(() => {
+    if (!sales || !Array.isArray(sales)) return [];
     if (!selectedMonth) return sales;
     
     return sales.filter(sale => {
@@ -134,6 +257,7 @@ const AnalyticsPage = ({ sales, inventory, onBack, isDarkMode }) => { // Added i
 
   // Get available months from sales data
   const availableMonths = useMemo(() => {
+    if (!sales || !Array.isArray(sales)) return [];
     const months = new Set();
     sales.forEach(sale => {
       const date = new Date(sale.saleDate || sale.createdAt);
@@ -143,10 +267,10 @@ const AnalyticsPage = ({ sales, inventory, onBack, isDarkMode }) => { // Added i
     return Array.from(months).sort().reverse();
   }, [sales]);
 
-  const totalSalesAmount = filteredSales.reduce((acc, sale) => acc + (sale.sellingPrice * sale.quantitySold || 0), 0);
-  const totalCostOfGoodsSold = filteredSales.reduce((acc, sale) => acc + ((sale.costPriceAtTimeOfSale || 0) * sale.quantitySold || 0), 0);
-  const totalProfit = filteredSales.reduce((acc, sale) => acc + (sale.profit || 0), 0);
-  const averageProfitPerSale = filteredSales.length > 0 ? totalProfit / filteredSales.length : 0;
+  const totalSalesAmount = filteredSales && filteredSales.length > 0 ? filteredSales.reduce((acc, sale) => acc + (sale.sellingPrice * sale.quantitySold || 0), 0) : 0;
+  const totalCostOfGoodsSold = filteredSales && filteredSales.length > 0 ? filteredSales.reduce((acc, sale) => acc + ((sale.costPriceAtTimeOfSale || 0) * sale.quantitySold || 0), 0) : 0;
+  const totalProfit = filteredSales && filteredSales.length > 0 ? filteredSales.reduce((acc, sale) => acc + (sale.profit || 0), 0) : 0;
+  const averageProfitPerSale = filteredSales && filteredSales.length > 0 ? totalProfit / filteredSales.length : 0;
 
   const profitPerItemChartData = getProfitPerItemData(filteredSales, isDarkMode);
   const dailyProfitChartData = getDailyProfitData(filteredSales, isDarkMode);

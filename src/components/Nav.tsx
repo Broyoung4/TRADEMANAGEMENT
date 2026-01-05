@@ -133,39 +133,53 @@ const Nav = () => {
   console.log(`session`, session);
 
   return (
-    <nav className={`fixed flex justify-between items-center w-full py-3 px-4 mb-32 transition-colors duration-300 ${
-      isDarkMode && themeConfig ? `${themeConfig.navBg} ${themeConfig.text}` : "bg-white text-slate-900"
+    <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b transition-all duration-300 ${
+      isDarkMode && themeConfig 
+        ? `${themeConfig.navBg} border-slate-700 shadow-lg` 
+        : "bg-white/80 border-slate-200 shadow-md"
     }`}>
-      <Link className="flex gap-2 justify-center items-center" href="/">
-        <Image
-          className="object-contain"
-          src={nextLogo}
-          alt="logo"
-          width={30}
-          height={30}
-        />
-        <p className={`text-md font-extrabold sm:flex hidden ${isDarkMode ? themeConfig.accent : "text-blue-600"}`}>Trade Track</p>
-      </Link>
+      <div className="max-w-7xl mx-auto w-full flex justify-between items-center px-4 sm:px-6 lg:px-8 py-4">
+        {/* Logo Section */}
+        <Link className="flex gap-3 justify-center items-center group" href="/">
+          <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+            isDarkMode && themeConfig 
+              ? `${themeConfig.accentBg}` 
+              : "bg-blue-500"
+          }`}>
+            <Image
+              className="object-contain"
+              src={nextLogo}
+              alt="logo"
+              width={24}
+              height={24}
+            />
+          </div>
+          <p className={`text-lg font-bold hidden sm:block transition-colors group-hover:opacity-80 ${
+            isDarkMode && themeConfig ? themeConfig.accent : "text-blue-600"
+          }`}>
+            Trade Track
+          </p>
+        </Link>
 
-
-      <div className="sm:flex hidden">
+        {/* Desktop Navigation */}
+        <div className="hidden sm:flex gap-2">
         {session?.user ? (
-          <div className="flex gap-3 md:gap-5">
+          <div className="flex gap-2 items-center">
             <Link
-              className={`border px-2 py-1 rounded transition-colors ${
-                isDarkMode
-                  ? `${themeConfig.border} ${themeConfig.text} hover:${themeConfig.accentBg}`
-                  : "border-slate-300 bg-transparent hover:bg-neutral-400"
+              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                isDarkMode && themeConfig
+                  ? `${themeConfig.text} hover:${themeConfig.accentBg} border ${themeConfig.border}`
+                  : "text-slate-700 hover:bg-slate-100 border border-slate-300"
               }`}
-              href="/inventory"
+              href="/"
             >
-              Add Inventory
+              Dashboard
             </Link>
             <button
-              className={`border px-2 py-1 rounded transition-colors ${
-                isDarkMode
-                  ? `${themeConfig.buttonBg} ${themeConfig.text} border-transparent ${themeConfig.buttonHover}`
-                  : "border-neutral-950 bg-slate-500 text-neutral-950 hover:bg-neutral-950 hover:text-neutral-200"
+              className={`px-4 py-2 rounded-lg font-medium transition-all text-white shadow-md ${
+                isDarkMode && themeConfig
+                  ? `${themeConfig.buttonBg} ${themeConfig.buttonHover}`
+                  : "bg-blue-600 hover:bg-blue-700"
               }`}
               type="button"
               onClick={signOut}
@@ -173,12 +187,12 @@ const Nav = () => {
               Sign Out
             </button>
 
-            <Link href="/profile">
+            <Link href="/profile" className="ml-2">
               <Image
                 src={session?.user.image}
-                width={37}
-                height={37}
-                className="rounded-full"
+                width={40}
+                height={40}
+                className="rounded-full ring-2 ring-offset-2 ring-slate-300 hover:ring-blue-500 transition-all"
                 alt="profile"
               />
             </Link>
@@ -191,53 +205,75 @@ const Nav = () => {
                   type="button"
                   key={provider.name}
                   onClick={() => signIn(provider.id)}
-                  className={`border px-2 py-1 rounded transition-colors ${
-                    isDarkMode
-                      ? `${themeConfig.border} ${themeConfig.text} hover:${themeConfig.accentBg}`
-                      : "border-slate-300 bg-transparent hover:bg-neutral-400"
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                    isDarkMode && themeConfig
+                      ? `${themeConfig.text} hover:${themeConfig.accentBg} border ${themeConfig.border}`
+                      : "text-slate-700 hover:bg-slate-100 border border-slate-300"
                   }`}
-                >Sign In</button>
+                >
+                  Sign In
+                </button>
               ))}
           </>
         )}
       </div>
-      <div className="sm:hidden flex relative">
+
+      {/* Mobile Menu Toggle */}
+      <div className="sm:hidden flex items-center gap-2">
         {session?.user ? (
-          <div className="flex">
+          <div className="flex items-center gap-3 relative">
             <Image
-                src={session?.user.image}
-                width={37}
-                height={37}
-                className="rounded-full"
-                alt="profile"
-                onClick={() => {setToggleDropdown((prev) => !prev)}}
-              />
-              {toggleDropdown && (
-                <div className={`w-32 absolute top-12 right-0 p-2 rounded-lg slide-in-top transition-colors ${
-                  isDarkMode ? `${themeConfig.bgSecondary} ${themeConfig.border} border` : "bg-neutral-800"
-                }`}>
-                  <Link href='/profile' 
-                  className={`text-md block my-2 transition-colors ${isDarkMode ? `${themeConfig.text} hover:${themeConfig.accent}` : "hover:text-blue-400"}`}
+              src={session?.user.image}
+              width={40}
+              height={40}
+              className="rounded-full ring-2 ring-slate-300 cursor-pointer hover:ring-blue-500 transition-all"
+              alt="profile"
+              onClick={() => {setToggleDropdown((prev) => !prev)}}
+            />
+            {toggleDropdown && (
+              <div className={`absolute top-16 right-0 min-w-max rounded-xl shadow-lg backdrop-blur-md fade-in ${
+                isDarkMode && themeConfig
+                  ? `${themeConfig.bgSecondary} border ${themeConfig.border}`
+                  : "bg-white border border-slate-200"
+              }`}>
+                <Link 
+                  href='/profile' 
+                  className={`block px-4 py-3 font-medium transition-colors border-b ${
+                    isDarkMode && themeConfig
+                      ? `${themeConfig.text} border-slate-700 hover:${themeConfig.accentBg}`
+                      : "text-slate-700 border-slate-200 hover:bg-slate-50"
+                  }`}
                   onClick={()=> setToggleDropdown(false)}
-                  >Profile</Link>
-                  <Link href='/inventory' 
-                  className={`text-md block my-2 transition-colors ${isDarkMode ? `${themeConfig.text} hover:${themeConfig.accent}` : "hover:text-blue-400"}`}
-                  onClick={()=> setToggleDropdown(false)}
-                  >Add Inventory</Link>
-                  <button
+                >
+                  Profile
+                </Link>
+                <Link
+                  href="/"
+                  className={`block px-4 py-3 font-medium transition-colors border-b ${
+                    isDarkMode && themeContext
+                      ? `${themeConfig.text} border-slate-700 hover:${themeConfig.accentBg}`
+                      : "text-slate-700 border-slate-200 hover:bg-slate-50"
+                  }`}
+                  onClick={() => setToggleDropdown(false)}
+                >
+                  Dashboard
+                </Link>
+                <button
                   type="button"
                   onClick={() => {
                     setToggleDropdown(false);
                     signOut();
                   }}
-                  className={`mt-5 w-full border px-2 py-1 rounded transition-colors ${
-                    isDarkMode
-                      ? `${themeConfig.buttonBg} ${themeConfig.text} border-transparent ${themeConfig.buttonHover}`
-                      : "border-slate-300 bg-transparent hover:bg-neutral-400"
+                  className={`w-full text-left px-4 py-3 font-medium transition-colors rounded-b-xl ${
+                    isDarkMode && themeConfig
+                      ? `${themeConfig.buttonBg} text-white ${themeConfig.buttonHover}`
+                      : "bg-blue-600 text-white hover:bg-blue-700"
                   }`}
-                >Sign Out</button>
-                </div>
-              )}
+                >
+                  Sign Out
+                </button>
+              </div>
+            )}
           </div>
         ): (
           <>
@@ -247,18 +283,21 @@ const Nav = () => {
                   type="button"
                   key={provider.name}
                   onClick={() => signIn(provider.id)}
-                  className={`border px-2 py-1 rounded transition-colors ${
-                    isDarkMode
-                      ? `${themeConfig.border} ${themeConfig.text} hover:${themeConfig.accentBg}`
-                      : "border-slate-300 bg-transparent hover:bg-neutral-400"
+                  className={`px-3 py-2 rounded-lg font-medium transition-all ${
+                    isDarkMode && themeConfig
+                      ? `${themeConfig.text} hover:${themeConfig.accentBg} border ${themeConfig.border}`
+                      : "text-slate-700 hover:bg-slate-100 border border-slate-300"
                   }`}
-                >Sign In</button>
+                >
+                  Sign In
+                </button>
               ))}
           </>
         )}
       </div>
-    </nav>
-  );
+    </div>
+  </nav>
+);
 };
 
 export default Nav;

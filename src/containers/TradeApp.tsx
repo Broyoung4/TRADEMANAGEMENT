@@ -1,7 +1,8 @@
 "use client";
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useMemo } from "react";
 import AnalyticsPage from "./AnalyticsPage"; // Assuming this exists
 import SellingPriceList from "./SellingPriceList"; // Assuming this exists
+import InvoiceReceipt from "./InvoiceReceipt"; // Assuming this exists
 import { ThemeContext } from "@/components/Provider";
 
 // Theme Configuration
@@ -743,13 +744,19 @@ export default function TradeApp() {
     }
   };
 
-  // Filter inventory based on search term
-  const itemsAvailableForSale = inventory.filter(
-    (item) => item.quantity * (Number(item.conversionFactor) || 1) > 0.0001 // Check against a very small number for float precision
+  // Filter inventory based on search term - memoized to prevent recalculation on every render
+  const itemsAvailableForSale = useMemo(
+    () => inventory.filter(
+      (item) => item.quantity * (Number(item.conversionFactor) || 1) > 0.0001 // Check against a very small number for float precision
+    ),
+    [inventory]
   );
 
-  const filteredItemsForSale = itemsAvailableForSale.filter((item) =>
-    item.itemName.toLowerCase().includes(salesSearchTerm.toLowerCase())
+  const filteredItemsForSale = useMemo(
+    () => itemsAvailableForSale.filter((item) =>
+      item.itemName.toLowerCase().includes(salesSearchTerm.toLowerCase())
+    ),
+    [itemsAvailableForSale, salesSearchTerm]
   );
   // Auto-populate selling price when an item is selected for sale and it has a default price
   useEffect(() => {
@@ -789,6 +796,18 @@ export default function TradeApp() {
       );
     }
 
+    if (currentView === "invoice") {
+      return (
+        <InvoiceReceipt
+          sales={sales}
+          inventory={inventory}
+          onBack={() => setCurrentView("dashboard")}
+          formatCurrency={formatCurrency}
+          isDarkMode={isDarkMode}
+        />
+      );
+    }
+
     return (
       <div
         className={`p-4 md:p-8 font-sans transition-colors duration-300 min-h-screen ${
@@ -804,111 +823,116 @@ export default function TradeApp() {
             onClose={() => setShowLowInventoryAlert(false)}
           />
         )}
-        <div className="mt-12">
-          <header className="mb-10">
-            <div className="flex flex-col sm:flex-row justify-between items-center mb-2">
-            <div className="text-center sm:text-left">
-              <h1
-                className={`text-3xl lg:text-4xl font-bold ${
-                  isDarkMode ? THEMES[currentTheme].dark.accent : "text-sky-700"
-                }`}
-              >
-                Trade Management Dashboard
-              </h1>
-              <p
-                className={`mt-1 ${
-                  isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-600"
-                }`}
-              >
-                Manage your inventory, track sales, and calculate profits.
-              </p>
-            </div>
-            <div className="mt-4 sm:mt-0 flex items-center space-x-2 flex-wrap">
-              <button
-                onClick={handleToggleTheme}
-                className={`p-2 rounded-lg shadow-md transition-colors duration-200 ${
-                  isDarkMode
-                    ? `${THEMES[currentTheme].dark.accentLight} hover:${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent}`
-                    : "bg-white hover:bg-slate-200 text-indigo-600"
-                }`}
-                title="Toggle Dark Mode"
-              >
-                {isDarkMode ? (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"
-                    />
-                  </svg>
-                ) : (
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"
-                    />
-                  </svg>
-                )}
-              </button>
-
-              {/* Color Theme Selector */}
-              {isDarkMode && (
-                <select
-                  value={currentTheme}
-                  onChange={(e) => handleChangeColorTheme(e.target.value)}
-                  className={`px-3 py-2 rounded-lg shadow-md transition-colors text-sm font-medium ${
-                    THEMES[currentTheme].dark.accentLight
-                  } ${THEMES[currentTheme].dark.text} border ${THEMES[currentTheme].dark.border} cursor-pointer hover:${THEMES[currentTheme].dark.accentBg}`}
-                  title="Select Color Theme"
+        <div className="pt-20">
+          <header className="mb-12 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+              <div>
+                <h1
+                  className={`text-4xl sm:text-5xl font-bold tracking-tight ${
+                    isDarkMode ? THEMES[currentTheme].dark.accent : "text-slate-900"
+                  }`}
                 >
-                  {Object.entries(THEMES).map(([key, theme]) => (
-                    <option key={key} value={key} className="bg-slate-900 text-white">
-                      {theme.name}
-                    </option>
-                  ))}
-                </select>
-              )}
+                  Dashboard
+                </h1>
+                <p
+                  className={`mt-2 text-lg ${
+                    isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-600"
+                  }`}
+                >
+                  Manage inventory, track sales, and analyze profits
+                </p>
+              </div>
+
+              {/* Controls */}
+              <div className="flex flex-wrap gap-3 items-center">
+                <button
+                  onClick={handleToggleTheme}
+                  className={`p-2.5 rounded-lg transition-all hover:scale-110 ${
+                    isDarkMode
+                      ? `${THEMES[currentTheme].dark.accentLight} hover:${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent}`
+                      : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                  }`}
+                  title="Toggle Dark Mode"
+                >
+                  {isDarkMode ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                  ) : (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                    </svg>
+                  )}
+                </button>
+
+                {isDarkMode && (
+                  <select
+                    value={currentTheme}
+                    onChange={(e) => handleChangeColorTheme(e.target.value)}
+                    className={`px-3 py-2 rounded-lg transition-all text-sm font-medium ${
+                      THEMES[currentTheme].dark.accentLight
+                    } ${THEMES[currentTheme].dark.text} border ${THEMES[currentTheme].dark.border} cursor-pointer`}
+                    title="Select Color Theme"
+                  >
+                    {Object.entries(THEMES).map(([key, theme]) => (
+                      <option key={key} value={key} className="bg-slate-900 text-white">
+                        {theme.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
 
               <button
                 onClick={() => setCurrentView("priceList")}
-                className={`${
+                className={`px-4 py-2.5 rounded-lg font-medium transition-all shadow-md ${
                   isDarkMode
-                    ? "bg-orange-600 hover:bg-orange-700"
-                    : "bg-orange-500 hover:bg-orange-600"
-                } text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200`}
+                    ? `${THEMES[currentTheme].dark.accentLight} hover:${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent}`
+                    : "bg-orange-500 hover:bg-orange-600 text-white"
+                }`}
               >
-                Manage Selling Prices
+                Manage Prices
               </button>
+
               <button
                 onClick={() => setCurrentView("analytics")}
                 disabled={sales.length === 0}
-                className={`${
-                  isDarkMode
-                    ? "bg-purple-700 hover:bg-purple-800 focus:ring-purple-600"
-                    : "bg-purple-600 hover:bg-purple-700 focus:ring-purple-500"
-                } text-white font-semibold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-opacity-50 disabled:bg-slate-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed`}
+                className={`px-4 py-2.5 rounded-lg font-medium transition-all shadow-md ${
+                  isDarkMode && sales.length > 0
+                    ? `${THEMES[currentTheme].dark.accentLight} hover:${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent}`
+                    : sales.length > 0
+                    ? "bg-purple-600 hover:bg-purple-700 text-white"
+                    : isDarkMode
+                    ? "bg-slate-700 text-slate-400 cursor-not-allowed"
+                    : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                }`}
                 title={
                   sales.length === 0
                     ? "Record sales for analytics"
                     : "View Sales Analytics"
                 }
               >
-                View Analytics
+                Analytics
+              </button>
+
+              <button
+                onClick={() => setCurrentView("invoice")}
+                disabled={sales.length === 0}
+                className={`px-4 py-2.5 rounded-lg font-medium transition-all shadow-md ${
+                  isDarkMode && sales.length > 0
+                    ? `${THEMES[currentTheme].dark.accentLight} hover:${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent}`
+                    : sales.length > 0
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : isDarkMode
+                    ? "bg-slate-700 text-slate-400 cursor-not-allowed"
+                    : "bg-slate-300 text-slate-500 cursor-not-allowed"
+                }`}
+                title={
+                  sales.length === 0
+                    ? "Record sales to generate invoices"
+                    : "Generate Invoice / Receipt"
+                }
+              >
+                🧾 Invoice
               </button>
             </div>
           </div>
@@ -977,9 +1001,9 @@ export default function TradeApp() {
                     placeholder={editingItemId ? "N/A" : "e.g., 10"}
                     min="0.01"
                     step="any"
-                    className={`w-full p-3 border rounded-lg transition-colors duration-200 ${
+                    className={`w-full p-3 border rounded-lg transition-all ${
                       isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 disabled:bg-gray-600 disabled:text-gray-400"
+                        ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} placeholder-slate-500 disabled:${THEMES[currentTheme].dark.bgTertiary} disabled:${THEMES[currentTheme].dark.textSecondary}`
                         : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 disabled:bg-slate-100 disabled:text-slate-500"
                     }`}
                     required={!editingItemId}
@@ -1017,10 +1041,10 @@ export default function TradeApp() {
                     placeholder="e.g., 10000"
                     min="0.01"
                     step="0.01"
-                    className={`w-full p-3 border rounded-lg transition-colors duration-200 ${
+                    className={`w-full p-3 border rounded-lg transition-all ${
                       isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:ring-sky-500 focus:border-sky-500"
-                        : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-600 focus:border-sky-600"
+                        ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} placeholder-slate-500 focus:ring-2 ${THEMES[currentTheme].dark.accentBg}`
+                        : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500"
                     }`}
                     required
                   />
@@ -1043,10 +1067,10 @@ export default function TradeApp() {
                     value={itemStockUnit}
                     onChange={(e) => setItemStockUnit(e.target.value)}
                     placeholder="e.g., bundle"
-                    className={`w-full p-3 border rounded-lg transition-colors duration-200 ${
+                    className={`w-full p-3 border rounded-lg transition-all ${
                       isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:ring-sky-500 focus:border-sky-500"
-                        : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-600 focus:border-sky-600"
+                        ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} placeholder-slate-500 focus:ring-2 ${THEMES[currentTheme].dark.accentBg}`
+                        : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500"
                     }`}
                     required
                   />
@@ -1066,10 +1090,10 @@ export default function TradeApp() {
                     value={itemSellingUnit}
                     onChange={(e) => setItemSellingUnit(e.target.value)}
                     placeholder="e.g., piece"
-                    className={`w-full p-3 border rounded-lg transition-colors duration-200 ${
+                    className={`w-full p-3 border rounded-lg transition-all ${
                       isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:ring-sky-500 focus:border-sky-500"
-                        : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-600 focus:border-sky-600"
+                        ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} placeholder-slate-500 focus:ring-2 ${THEMES[currentTheme].dark.accentBg}`
+                        : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500"
                     }`}
                   />
                   {itemSellingUnit && itemSellingUnit !== itemStockUnit && (
@@ -1108,10 +1132,10 @@ export default function TradeApp() {
                     placeholder="e.g., 10"
                     min="0.00001"
                     step="any"
-                    className={`w-full p-3 border rounded-lg transition-colors duration-200 ${
+                    className={`w-full p-3 border rounded-lg transition-all ${
                       isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 disabled:bg-gray-600 disabled:text-gray-400 focus:ring-sky-500 focus:border-sky-500"
-                        : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 disabled:bg-slate-100 disabled:text-slate-500 focus:ring-sky-600 focus:border-sky-600"
+                        ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} placeholder-slate-500 disabled:${THEMES[currentTheme].dark.bgTertiary} disabled:${THEMES[currentTheme].dark.textSecondary} focus:ring-2 ${THEMES[currentTheme].dark.accentBg}`
+                        : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 disabled:bg-slate-100 disabled:text-slate-500 focus:ring-sky-500 focus:border-sky-500"
                     }`}
                     required
                     disabled={
@@ -1147,10 +1171,10 @@ export default function TradeApp() {
                   placeholder="e.g., 1500"
                   min="0"
                   step="0.01"
-                  className={`w-full p-3 border rounded-lg transition-colors duration-200 ${
+                  className={`w-full p-3 border rounded-lg transition-all ${
                     isDarkMode
-                      ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:ring-sky-500 focus:border-sky-500"
-                      : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-600 focus:border-sky-600"
+                      ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} placeholder-slate-500 focus:ring-2 ${THEMES[currentTheme].dark.accentBg}`
+                      : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500"
                   }`}
                 />
                 <p
@@ -1163,26 +1187,26 @@ export default function TradeApp() {
                 </p>
               </div>
 
-              <div className="flex space-x-3 pt-2">
+              <div className="flex gap-3 pt-4">
                 <button
                   type="submit"
-                  className={`flex-grow font-semibold py-3 px-4 rounded-lg transition-colors duration-200 ${
+                  className={`flex-grow font-medium py-3 px-4 rounded-lg transition-all shadow-md ${
                     isDarkMode
-                      ? "bg-sky-500 hover:bg-sky-600 text-white"
+                      ? `${THEMES[currentTheme].dark.accentLight} hover:${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent}`
                       : "bg-sky-600 hover:bg-sky-700 text-white"
                   }`}
                 >
                   {editingItemId
-                    ? "Update Item Details"
-                    : "Add Item to Inventory"}
+                    ? "Update Item"
+                    : "Add to Inventory"}
                 </button>
                 {editingItemId && (
                   <button
                     type="button"
                     onClick={resetInventoryForm}
-                    className={`flex-grow font-semibold py-3 px-4 rounded-lg transition-colors duration-200 ${
+                    className={`flex-grow font-medium py-3 px-4 rounded-lg transition-all shadow-md ${
                       isDarkMode
-                        ? "bg-gray-600 hover:bg-gray-500 text-white"
+                        ? `bg-slate-700 hover:bg-slate-600 text-slate-200`
                         : "bg-slate-500 hover:bg-slate-600 text-white"
                     }`}
                   >
@@ -1233,10 +1257,10 @@ export default function TradeApp() {
                     type="text"
                     id="salesSearch"
                     placeholder="Type to search..."
-                    className={`w-full p-3 border rounded-lg transition-colors duration-200 ${
+                    className={`w-full p-3 border rounded-lg transition-all ${
                       isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:ring-emerald-500 focus:border-emerald-500"
-                        : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-emerald-600 focus:border-emerald-600"
+                        ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} placeholder-slate-500 focus:ring-2 ${THEMES[currentTheme].dark.accentBg}`
+                        : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500"
                     }`}
                     value={salesSearchTerm}
                     onChange={(e) => setSalesSearchTerm(e.target.value)}
@@ -1255,10 +1279,10 @@ export default function TradeApp() {
                     id="selectedItem"
                     value={selectedItemId}
                     onChange={(e) => setSelectedItemId(e.target.value)}
-                    className={`w-full p-3 border rounded-lg transition-colors duration-200 ${
+                    className={`w-full p-3 border rounded-lg transition-all ${
                       isDarkMode
-                        ? "bg-gray-700 border-gray-600 text-gray-200 focus:ring-emerald-500 focus:border-emerald-500"
-                        : "bg-white border-slate-300 text-slate-900 focus:ring-emerald-600 focus:border-emerald-600"
+                        ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} focus:ring-2 ${THEMES[currentTheme].dark.accentBg}`
+                        : "bg-white border-slate-300 text-slate-900 focus:ring-emerald-500 focus:border-emerald-500"
                     }`}
                     required
                   >
@@ -1319,10 +1343,10 @@ export default function TradeApp() {
                       placeholder="e.g., 2"
                       min="0.001"
                       step="any"
-                      className={`w-full p-3 border rounded-lg transition-colors duration-200 ${
+                      className={`w-full p-3 border rounded-lg transition-all ${
                         isDarkMode
-                          ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:ring-emerald-500 focus:border-emerald-500"
-                          : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-emerald-600 focus:border-emerald-600"
+                          ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} placeholder-slate-500 focus:ring-2 ${THEMES[currentTheme].dark.accentBg}`
+                          : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500"
                       }`}
                       required
                     />
@@ -1344,10 +1368,10 @@ export default function TradeApp() {
                       placeholder="e.g., 150"
                       min="0" // Price can be zero for giveaways/promos
                       step="0.01"
-                      className={`w-full p-3 border rounded-lg transition-colors duration-200 ${
+                      className={`w-full p-3 border rounded-lg transition-all ${
                         isDarkMode
-                          ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:ring-emerald-500 focus:border-emerald-500"
-                          : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-emerald-600 focus:border-emerald-600"
+                          ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} placeholder-slate-500 focus:ring-2 ${THEMES[currentTheme].dark.accentBg}`
+                          : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-emerald-500 focus:border-emerald-500"
                       }`}
                       required
                     />
@@ -1355,11 +1379,11 @@ export default function TradeApp() {
                 </div>
                 <button
                   type="submit"
-                  className={`w-full font-semibold py-3 px-4 rounded-lg transition-colors duration-200 ${
+                  className={`w-full font-medium py-3 px-4 rounded-lg transition-all shadow-md ${
                     isDarkMode
-                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
-                      : "bg-emerald-600 hover:bg-emerald-700 text-white"
-                  } disabled:bg-slate-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed`}
+                      ? `${THEMES[currentTheme].dark.accentLight} hover:${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent} disabled:bg-slate-700 disabled:text-slate-400`
+                      : "bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-slate-300 disabled:text-slate-500"
+                  } disabled:cursor-not-allowed`}
                   disabled={
                     !selectedItemId ||
                     itemsAvailableForSale.length === 0 ||
@@ -1377,17 +1401,19 @@ export default function TradeApp() {
         {/* --- INVENTORY DISPLAY SECTION --- */}
         <section
           className={`mt-10 ${
-            isDarkMode ? "bg-gray-800" : "bg-white"
-          } p-6 rounded-xl shadow-lg transition-colors duration-300`}
+            isDarkMode ? THEMES[currentTheme].dark.bgSecondary : "bg-white"
+          } p-6 rounded-xl shadow-lg transition-colors duration-300 ${
+            isDarkMode ? THEMES[currentTheme].dark.border : "border-slate-200"
+          } border`}
         >
           <div
             className={`flex flex-col sm:flex-row justify-between items-center mb-6 ${
-              isDarkMode ? "border-gray-700" : "border-slate-300"
+              isDarkMode ? THEMES[currentTheme].dark.border : "border-slate-300"
             } border-b pb-3`}
           >
             <h2
               className={`text-2xl font-semibold ${
-                isDarkMode ? "text-sky-400" : "text-sky-600"
+                isDarkMode ? THEMES[currentTheme].dark.accent : "text-sky-600"
               }`}
             >
               Current Inventory
@@ -1395,10 +1421,10 @@ export default function TradeApp() {
             <input
               type="text"
               placeholder="Search inventory..."
-              className={`mt-2 sm:mt-0 w-full sm:w-auto md:w-1/3 p-2 border rounded-lg transition-colors duration-200 ${
+              className={`mt-2 sm:mt-0 w-full sm:w-auto md:w-1/3 p-2.5 border rounded-lg transition-all ${
                 isDarkMode
-                  ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:ring-sky-500 focus:border-sky-500"
-                  : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-600 focus:border-sky-600"
+                  ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} placeholder-slate-500 focus:ring-2 ${THEMES[currentTheme].dark.accentBg}`
+                  : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-500 focus:border-sky-500"
               }`}
               value={inventorySearchTerm}
               onChange={(e) => setInventorySearchTerm(e.target.value)}
@@ -1416,16 +1442,16 @@ export default function TradeApp() {
             <div className="overflow-x-auto">
               <table
                 className={`min-w-full divide-y ${
-                  isDarkMode ? "divide-gray-700" : "divide-slate-300"
+                  isDarkMode ? THEMES[currentTheme].dark.border : "divide-slate-300"
                 }`}
               >
                 <thead
-                  className={`${isDarkMode ? "bg-gray-700" : "bg-slate-100"}`}
+                  className={`${isDarkMode ? THEMES[currentTheme].dark.bgTertiary : "bg-slate-100"}`}
                 >
                   <tr>
                     <th
                       className={`px-4 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Item Name
@@ -1446,42 +1472,42 @@ export default function TradeApp() {
                     </th>
                     <th
                       className={`px-4 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Cost/Stock Unit
                     </th>
                     <th
                       className={`px-4 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Selling Unit
                     </th>
                     <th
                       className={`px-4 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Conv. Factor
                     </th>
                     <th
                       className={`px-4 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Total Selling Units
                     </th>
                     <th
                       className={`px-4 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Default Selling Price
                     </th>
                     <th
                       className={`px-4 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Actions
@@ -1512,16 +1538,16 @@ export default function TradeApp() {
                           className={`${
                             editingItemId === item._id
                               ? isDarkMode
-                                ? "bg-sky-800"
+                                ? `${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent}`
                                 : "bg-sky-100"
                               : isDarkMode
-                              ? "hover:bg-gray-700"
+                              ? `hover:${THEMES[currentTheme].dark.bgTertiary}`
                               : "hover:bg-slate-50"
                           } transition-colors duration-150`}
                         >
                           <td
                             className={`px-4 py-3 whitespace-nowrap text-sm font-medium ${
-                              isDarkMode ? "text-gray-100" : "text-slate-900"
+                              isDarkMode ? THEMES[currentTheme].dark.text : "text-slate-900"
                             } truncate`}
                             title={item.itemName}
                           >
@@ -1529,14 +1555,14 @@ export default function TradeApp() {
                           </td>
                           <td
                             className={`px-4 py-3 whitespace-nowrap text-sm ${
-                              isDarkMode ? "text-gray-300" : "text-slate-600"
+                              isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-600"
                             }`}
                           >
                             {Number(item.quantity).toFixed(3)}
                           </td>
                           <td
                             className={`px-4 py-3 whitespace-nowrap text-sm ${
-                              isDarkMode ? "text-gray-300" : "text-slate-600"
+                              isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-600"
                             }`}
                           >
                             {item.stockUnit}
@@ -1632,17 +1658,19 @@ export default function TradeApp() {
         {/* --- SALES HISTORY SECTION --- */}
         <section
           className={`mt-10 ${
-            isDarkMode ? "bg-gray-800" : "bg-white"
-          } p-6 rounded-xl shadow-lg transition-colors duration-300`}
+            isDarkMode ? THEMES[currentTheme].dark.bgSecondary : "bg-white"
+          } p-6 rounded-xl shadow-lg transition-colors duration-300 ${
+            isDarkMode ? THEMES[currentTheme].dark.border : "border-slate-200"
+          } border`}
         >
           <div
             className={`flex flex-col md:flex-row justify-between items-center mb-6 ${
-              isDarkMode ? "border-gray-700" : "border-slate-300"
+              isDarkMode ? THEMES[currentTheme].dark.border : "border-slate-300"
             } border-b pb-3`}
           >
             <h2
               className={`text-2xl font-semibold ${
-                isDarkMode ? "text-emerald-400" : "text-emerald-600"
+                isDarkMode ? THEMES[currentTheme].dark.accent : "text-emerald-600"
               }`}
             >
               Sales History & Profit
@@ -1650,7 +1678,7 @@ export default function TradeApp() {
             <div
               className={`mt-3 md:mt-0 text-xl font-bold ${
                 isDarkMode
-                  ? "text-emerald-400 bg-gray-700"
+                  ? `${THEMES[currentTheme].dark.accent} ${THEMES[currentTheme].dark.bgTertiary}`
                   : "text-emerald-700 bg-emerald-100"
               } px-4 py-2 rounded-lg`}
             >
@@ -1669,65 +1697,65 @@ export default function TradeApp() {
             <div className="overflow-x-auto">
               <table
                 className={`min-w-full divide-y ${
-                  isDarkMode ? "divide-gray-700" : "divide-slate-300"
+                  isDarkMode ? THEMES[currentTheme].dark.border : "divide-slate-300"
                 }`}
               >
                 <thead
-                  className={`${isDarkMode ? "bg-gray-700" : "bg-slate-100"}`}
+                  className={`${isDarkMode ? THEMES[currentTheme].dark.bgTertiary : "bg-slate-100"}`}
                 >
                   <tr>
                     <th
                       className={`px-3 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Date
                     </th>
                     <th
                       className={`px-3 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Item Name
                     </th>
                     <th
                       className={`px-3 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Qty Sold
                     </th>
                     <th
                       className={`px-3 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Unit Sold
                     </th>
                     <th
                       className={`px-3 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Selling Price / Unit
                     </th>
                     <th
                       className={`px-3 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Cost Price / Unit
                     </th>
                     <th
                       className={`px-3 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Profit
                     </th>
                     <th
                       className={`px-3 py-3 text-left text-xs font-medium ${
-                        isDarkMode ? "text-slate-300" : "text-slate-500"
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
                       Actions
@@ -1737,9 +1765,9 @@ export default function TradeApp() {
                 <tbody
                   className={`${
                     isDarkMode
-                      ? "bg-gray-800 divide-gray-700"
+                      ? `${THEMES[currentTheme].dark.bgSecondary} ${THEMES[currentTheme].dark.border}`
                       : "bg-white divide-slate-200"
-                  }`}
+                  } divide-y`}
                 >
                   {sales
                     .slice()
@@ -1757,7 +1785,7 @@ export default function TradeApp() {
                           key={sale._id}
                           className={`${
                             isDarkMode
-                              ? "hover:bg-gray-700"
+                              ? `hover:${THEMES[currentTheme].dark.bgTertiary}`
                               : "hover:bg-slate-50"
                           } transition-colors duration-150`}
                         >
