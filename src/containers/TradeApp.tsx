@@ -897,10 +897,10 @@ export default function TradeApp() {
                 onClick={() => setCurrentView("analytics")}
                 disabled={sales.length === 0}
                 className={`px-4 py-2.5 rounded-lg font-medium transition-all shadow-md ${
-                  isDarkMode && sales.length > 0
-                    ? `${THEMES[currentTheme].dark.accentLight} hover:${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent}`
-                    : sales.length > 0
-                    ? "bg-purple-600 hover:bg-purple-700 text-white"
+                  sales.length > 0
+                    ? isDarkMode
+                      ? `${THEMES[currentTheme].dark.accentLight} hover:${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent}`
+                      : "bg-purple-600 hover:bg-purple-700 text-white"
                     : isDarkMode
                     ? "bg-slate-700 text-slate-400 cursor-not-allowed"
                     : "bg-slate-300 text-slate-500 cursor-not-allowed"
