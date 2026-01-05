@@ -1,7 +1,163 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import AnalyticsPage from "./AnalyticsPage"; // Assuming this exists
 import SellingPriceList from "./SellingPriceList"; // Assuming this exists
+import { ThemeContext } from "@/components/Provider";
+
+// Theme Configuration
+const THEMES = {
+  midnight: {
+    name: "Midnight Blue",
+    dark: {
+      bg: "bg-slate-950",
+      bgSecondary: "bg-slate-900",
+      bgTertiary: "bg-slate-800",
+      text: "text-slate-100",
+      textSecondary: "text-slate-400",
+      border: "border-slate-700",
+      accent: "text-blue-400",
+      accentBg: "bg-blue-900",
+      accentLight: "bg-blue-800",
+    },
+  },
+  forest: {
+    name: "Forest Green",
+    dark: {
+      bg: "bg-emerald-950",
+      bgSecondary: "bg-emerald-900",
+      bgTertiary: "bg-emerald-800",
+      text: "text-emerald-50",
+      textSecondary: "text-emerald-400",
+      border: "border-emerald-700",
+      accent: "text-green-400",
+      accentBg: "bg-green-900",
+      accentLight: "bg-green-800",
+    },
+  },
+  sunset: {
+    name: "Sunset Orange",
+    dark: {
+      bg: "bg-orange-950",
+      bgSecondary: "bg-orange-900",
+      bgTertiary: "bg-orange-800",
+      text: "text-orange-50",
+      textSecondary: "text-orange-300",
+      border: "border-orange-700",
+      accent: "text-amber-400",
+      accentBg: "bg-amber-900",
+      accentLight: "bg-amber-800",
+    },
+  },
+  amethyst: {
+    name: "Amethyst Purple",
+    dark: {
+      bg: "bg-purple-950",
+      bgSecondary: "bg-purple-900",
+      bgTertiary: "bg-purple-800",
+      text: "text-purple-50",
+      textSecondary: "text-purple-300",
+      border: "border-purple-700",
+      accent: "text-fuchsia-400",
+      accentBg: "bg-fuchsia-900",
+      accentLight: "bg-fuchsia-800",
+    },
+  },
+  crimson: {
+    name: "Crimson Red",
+    dark: {
+      bg: "bg-red-950",
+      bgSecondary: "bg-red-900",
+      bgTertiary: "bg-red-800",
+      text: "text-red-50",
+      textSecondary: "text-red-300",
+      border: "border-red-700",
+      accent: "text-rose-400",
+      accentBg: "bg-rose-900",
+      accentLight: "bg-rose-800",
+    },
+  },
+  ocean: {
+    name: "Ocean Cyan",
+    dark: {
+      bg: "bg-cyan-950",
+      bgSecondary: "bg-cyan-900",
+      bgTertiary: "bg-cyan-800",
+      text: "text-cyan-50",
+      textSecondary: "text-cyan-300",
+      border: "border-cyan-700",
+      accent: "text-cyan-400",
+      accentBg: "bg-cyan-900",
+      accentLight: "bg-cyan-800",
+    },
+  },
+};
+
+// Low Inventory Alert Component (Toast-style)
+const LowInventoryAlert = ({ items, isDarkMode, onClose }) => {
+  if (items.length === 0) return null;
+
+  // Sort items by quantity (lowest first)
+  const sortedItems = [...items].sort((a, b) => Number(a.quantity) - Number(b.quantity));
+
+  return (
+    <div className="fixed top-24 right-4 z-50 max-w-sm">
+      <div className={`rounded-lg shadow-2xl overflow-hidden ${isDarkMode ? "bg-red-950 border border-red-700" : "bg-red-50 border border-red-300"}`}>
+        {/* Header */}
+        <div className={`px-4 py-3 ${isDarkMode ? "bg-red-900" : "bg-red-100"} border-b ${isDarkMode ? "border-red-700" : "border-red-300"} flex justify-between items-center`}>
+          <div className="flex items-center gap-2">
+            <span className="text-xl">⚠️</span>
+            <h3 className={`font-bold text-sm ${isDarkMode ? "text-red-100" : "text-red-800"}`}>
+              Low Stock Alert
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            className={`text-lg leading-none transition-colors ${isDarkMode ? "text-red-400 hover:text-red-200" : "text-red-600 hover:text-red-800"}`}
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Items List */}
+        <div className="max-h-80 overflow-y-auto">
+          {sortedItems.map((item, idx) => (
+            <div
+              key={item._id}
+              className={`px-4 py-3 border-b last:border-b-0 ${
+                isDarkMode
+                  ? "bg-red-950 border-red-800 hover:bg-red-900"
+                  : "bg-red-50 border-red-200 hover:bg-red-100"
+              } transition-colors`}
+            >
+              <div className="flex justify-between items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <p className={`font-semibold text-sm ${isDarkMode ? "text-red-100" : "text-red-800"} truncate`}>
+                    {item.itemName}
+                  </p>
+                  <p className={`text-xs mt-1 ${isDarkMode ? "text-red-300" : "text-red-600"}`}>
+                    Stock: <span className="font-bold">{item.quantity}</span> {item.stockUnit || 'unit(s)'}
+                  </p>
+                </div>
+                <div className={`flex-shrink-0 px-2 py-1 rounded text-xs font-bold ${
+                  Number(item.quantity) === 0
+                    ? isDarkMode ? "bg-red-700 text-red-100" : "bg-red-200 text-red-800"
+                    : isDarkMode ? "bg-orange-700 text-orange-100" : "bg-orange-200 text-orange-800"
+                }`}>
+                  {Number(item.quantity) === 0 ? "OUT" : "LOW"}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className={`px-4 py-2 text-xs ${isDarkMode ? "bg-red-900 text-red-300" : "bg-red-100 text-red-600"}`}>
+          {sortedItems.length} item{sortedItems.length > 1 ? 's' : ''} with low stock
+        </div>
+      </div>
+    </div>
+  );
+};
 
 // Helper to format currency
 const formatCurrency = (amount) => {
@@ -15,13 +171,42 @@ const formatCurrency = (amount) => {
 };
 
 export default function TradeApp() {
+  const themeContext = useContext(ThemeContext);
+  const { isDarkMode: ctxIsDarkMode, setIsDarkMode: ctxSetIsDarkMode, currentTheme: ctxCurrentTheme, setCurrentTheme: ctxSetCurrentTheme } = themeContext || {};
+  
+  // Use context values if available, otherwise fall back to local state
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [currentTheme, setCurrentTheme] = useState("midnight");
+
+  // Sync with context
+  useEffect(() => {
+    if (ctxIsDarkMode !== undefined) {
+      setIsDarkMode(ctxIsDarkMode);
+    }
+    if (ctxCurrentTheme) {
+      setCurrentTheme(ctxCurrentTheme);
+    }
+  }, [ctxIsDarkMode, ctxCurrentTheme]);
+
+  const handleToggleTheme = () => {
+    const newValue = !isDarkMode;
+    setIsDarkMode(newValue);
+    if (ctxSetIsDarkMode) ctxSetIsDarkMode(newValue);
+  };
+
+  const handleChangeColorTheme = (themeName) => {
+    setCurrentTheme(themeName);
+    if (ctxSetCurrentTheme) ctxSetCurrentTheme(themeName);
+  };
+
+  // Form state for inventory
   const [inventory, setInventory] = useState([]);
   const [sales, setSales] = useState([]);
   const [currentView, setCurrentView] = useState("dashboard");
   const [inventorySearchTerm, setInventorySearchTerm] = useState("");
-  const [isDarkMode, setIsDarkMode] = useState(false); // Dark mode state
+  const [lowInventoryItems, setLowInventoryItems] = useState([]);
+  const [showLowInventoryAlert, setShowLowInventoryAlert] = useState(false);
 
-  // Form state for inventory
   const [itemNamed, setItemNamed] = useState("");
   const [itemQuantity, setItemQuantity] = useState("");
   const [itemCostPrice, setItemCostPrice] = useState("");
@@ -49,17 +234,18 @@ export default function TradeApp() {
     }
     // Save theme preference to local storage
     localStorage.setItem("theme", isDarkMode ? "dark" : "light");
-  }, [isDarkMode]);
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-  };
+    localStorage.setItem("colorTheme", currentTheme);
+  }, [isDarkMode, currentTheme]);
 
   useEffect(() => {
     // Check local storage for saved theme preference
     const savedTheme = localStorage.getItem("theme");
+    const savedColorTheme = localStorage.getItem("colorTheme");
     if (savedTheme === "dark") {
       setIsDarkMode(true);
+    }
+    if (savedColorTheme && THEMES[savedColorTheme]) {
+      setCurrentTheme(savedColorTheme);
     } else {
       setIsDarkMode(false); // Default to light
     }
@@ -96,6 +282,15 @@ export default function TradeApp() {
           0
         );
         setTotalProfit(currentTotalProfit);
+
+        // Check for low inventory items (quantity <= 1)
+        const lowItems = inventoryData.filter(
+          (item) => Number(item.quantity) <= 1
+        );
+        setLowInventoryItems(lowItems);
+        if (lowItems.length > 0) {
+          setShowLowInventoryAlert(true);
+        }
       } catch (error) {
         console.error("Error fetching data:", error);
         alert(`Error fetching data: ${error.message}`);
@@ -596,39 +791,47 @@ export default function TradeApp() {
 
     return (
       <div
-        className={`p-4 md:p-8 font-sans mt-12 min-h-screen transition-colors duration-300 ${
+        className={`p-4 md:p-8 font-sans transition-colors duration-300 min-h-screen ${
           isDarkMode
-            ? "bg-gray-900 text-gray-200"
+            ? `${THEMES[currentTheme].dark.bg} ${THEMES[currentTheme].dark.text}`
             : "bg-slate-50 text-slate-900"
         }`}
       >
-        <header className="mb-10">
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-2">
+        {showLowInventoryAlert && (
+          <LowInventoryAlert
+            items={lowInventoryItems}
+            isDarkMode={isDarkMode}
+            onClose={() => setShowLowInventoryAlert(false)}
+          />
+        )}
+        <div className="mt-12">
+          <header className="mb-10">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-2">
             <div className="text-center sm:text-left">
               <h1
                 className={`text-3xl lg:text-4xl font-bold ${
-                  isDarkMode ? "text-sky-400" : "text-sky-700"
+                  isDarkMode ? THEMES[currentTheme].dark.accent : "text-sky-700"
                 }`}
               >
                 Trade Management Dashboard
               </h1>
               <p
                 className={`mt-1 ${
-                  isDarkMode ? "text-slate-400" : "text-slate-600"
+                  isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-600"
                 }`}
               >
                 Manage your inventory, track sales, and calculate profits.
               </p>
             </div>
-            <div className="mt-4 sm:mt-0 flex items-center space-x-2">
+            <div className="mt-4 sm:mt-0 flex items-center space-x-2 flex-wrap">
               <button
-                onClick={toggleTheme}
+                onClick={handleToggleTheme}
                 className={`p-2 rounded-lg shadow-md transition-colors duration-200 ${
                   isDarkMode
-                    ? "bg-gray-700 hover:bg-gray-600 text-yellow-400"
+                    ? `${THEMES[currentTheme].dark.accentLight} hover:${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent}`
                     : "bg-white hover:bg-slate-200 text-indigo-600"
                 }`}
-                title="Toggle Theme"
+                title="Toggle Dark Mode"
               >
                 {isDarkMode ? (
                   <svg
@@ -662,6 +865,25 @@ export default function TradeApp() {
                   </svg>
                 )}
               </button>
+
+              {/* Color Theme Selector */}
+              {isDarkMode && (
+                <select
+                  value={currentTheme}
+                  onChange={(e) => handleChangeColorTheme(e.target.value)}
+                  className={`px-3 py-2 rounded-lg shadow-md transition-colors text-sm font-medium ${
+                    THEMES[currentTheme].dark.accentLight
+                  } ${THEMES[currentTheme].dark.text} border ${THEMES[currentTheme].dark.border} cursor-pointer hover:${THEMES[currentTheme].dark.accentBg}`}
+                  title="Select Color Theme"
+                >
+                  {Object.entries(THEMES).map(([key, theme]) => (
+                    <option key={key} value={key} className="bg-slate-900 text-white">
+                      {theme.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+
               <button
                 onClick={() => setCurrentView("priceList")}
                 className={`${
@@ -696,13 +918,15 @@ export default function TradeApp() {
           {/* --- INVENTORY MANAGEMENT SECTION --- */}
           <section
             className={`${
-              isDarkMode ? "bg-gray-800" : "bg-white"
-            } p-6 rounded-xl shadow-lg transition-colors duration-300`}
+              isDarkMode ? THEMES[currentTheme].dark.bgSecondary : "bg-white"
+            } p-6 rounded-xl shadow-lg transition-colors duration-300 ${
+              isDarkMode ? THEMES[currentTheme].dark.border : "border-slate-200"
+            } border`}
           >
             <h2
               className={`text-2xl font-semibold mb-6 ${
                 isDarkMode
-                  ? "text-sky-400 border-gray-700"
+                  ? `${THEMES[currentTheme].dark.accent} border-${THEMES[currentTheme].dark.border}`
                   : "text-sky-600 border-slate-300"
               } border-b pb-3`}
             >
@@ -713,7 +937,7 @@ export default function TradeApp() {
                 <label
                   htmlFor="itemNamed"
                   className={`block text-sm font-medium ${
-                    isDarkMode ? "text-slate-300" : "text-slate-700"
+                    isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-700"
                   } mb-1`}
                 >
                   Item Name:
@@ -726,7 +950,7 @@ export default function TradeApp() {
                   placeholder="e.g., Flashband Bundle"
                   className={`w-full p-3 border rounded-lg transition-colors duration-200 ${
                     isDarkMode
-                      ? "bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400 focus:ring-sky-500 focus:border-sky-500"
+                      ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} placeholder-slate-500 focus:ring-2 focus:ring-offset-0 ${THEMES[currentTheme].dark.accentBg} focus:border-transparent`
                       : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-sky-600 focus:border-sky-600"
                   }`}
                   required
@@ -738,7 +962,7 @@ export default function TradeApp() {
                   <label
                     htmlFor="itemQuantity"
                     className={`block text-sm font-medium ${
-                      isDarkMode ? "text-slate-300" : "text-slate-700"
+                      isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-700"
                     } mb-1`}
                   >
                     {editingItemId
@@ -1621,6 +1845,7 @@ export default function TradeApp() {
             </div>
           )}
         </section>
+        </div>
       </div>
     );
   };
