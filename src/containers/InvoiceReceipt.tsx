@@ -118,7 +118,7 @@ export default function InvoiceReceipt({
   const currentTheme = themeContext?.currentTheme || "midnight";
   
   const [selectedSales, setSelectedSales] = useState<string[]>([]);
-  const [sellerName, setSellerName] = useState("");
+  const [businessName, setBusinessName] = useState("BroyoungTradeStores");
   const [buyerName, setBuyerName] = useState("");
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [invoiceDate, setInvoiceDate] = useState(
@@ -319,7 +319,7 @@ export default function InvoiceReceipt({
             .signature-section {
               margin-top: 40px;
               display: flex;
-              justify-content: space-around;
+              justify-content: space-between;
               font-size: 11px;
             }
             .signature-box {
@@ -330,6 +330,11 @@ export default function InvoiceReceipt({
               height: 60px;
               margin-bottom: 10px;
               border-bottom: 1px solid #000;
+            }
+            .signature-line {
+              height: 60px;
+              border-bottom: 1px solid #000;
+              margin-bottom: 10px;
             }
             .notes {
               margin-top: 15px;
@@ -351,8 +356,8 @@ export default function InvoiceReceipt({
         <body>
           <div class="receipt-container">
             <div class="header">
-              <h1>INVOICE / RECEIPT</h1>
-              <p>Trade Management System</p>
+              <h1>${businessName}</h1>
+              <p>INVOICE / RECEIPT</p>
             </div>
 
             <div class="invoice-details">
@@ -363,11 +368,7 @@ export default function InvoiceReceipt({
                 <p>${invoiceDate}</p>
               </div>
               <div class="details-section">
-                <strong>From (Seller):</strong>
-                <p>${sellerName || "Not Specified"}</p>
-              </div>
-              <div class="details-section">
-                <strong>To (Buyer):</strong>
+                <strong>Customer:</strong>
                 <p>${buyerName || "Not Specified"}</p>
               </div>
             </div>
@@ -405,28 +406,26 @@ export default function InvoiceReceipt({
 
             <div class="summary">
               <div class="summary-line">
-                <span>Subtotal:</span>
+                <span>Total Amount:</span>
                 <span>${formatCurrency(totalAmount)}</span>
-              </div>
-              <div class="summary-line">
-                <span>Cost of Goods:</span>
-                <span>${formatCurrency(totalCost)}</span>
-              </div>
-              <div class="summary-line total-line">
-                <span>Profit/Margin:</span>
-                <span>${formatCurrency(totalProfit)}</span>
               </div>
             </div>
 
             ${
-              signature
+              signature || true
                 ? `
               <div class="signature-section">
                 <div class="signature-box">
-                  <div class="signature-image">
-                    <img src="${signature}" style="height: 100%; width: 100%; object-fit: contain;" />
-                  </div>
+                  ${
+                    signature
+                      ? `<div class="signature-image"><img src="${signature}" style="height: 100%; width: 100%; object-fit: contain;" /></div>`
+                      : '<div class="signature-line"></div>'
+                  }
                   <p>Seller Signature</p>
+                </div>
+                <div class="signature-box">
+                  <div class="signature-line"></div>
+                  <p>Buyer Signature</p>
                 </div>
               </div>
             `
@@ -571,13 +570,13 @@ export default function InvoiceReceipt({
                         : "text-slate-700"
                     }`}
                   >
-                    Seller Name:
+                    Business Name:
                   </label>
                   <input
                     type="text"
-                    value={sellerName}
-                    onChange={(e) => setSellerName(e.target.value)}
-                    placeholder="Your business/name"
+                    value={businessName}
+                    onChange={(e) => setBusinessName(e.target.value)}
+                    placeholder="Your business name"
                     className={`w-full p-3 border rounded-lg transition-all ${
                       isDarkMode
                         ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} focus:ring-2 ${THEMES[currentTheme].dark.accentBg}`
