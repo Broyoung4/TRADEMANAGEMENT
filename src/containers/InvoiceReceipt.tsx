@@ -121,14 +121,17 @@ export default function InvoiceReceipt({
   const [businessName, setBusinessName] = useState("BroyoungTradeStores");
   const [buyerName, setBuyerName] = useState("");
   const [invoiceNumber, setInvoiceNumber] = useState("");
-  const [invoiceDate, setInvoiceDate] = useState(
-    new Date().toISOString().split("T")[0]
-  );
+  const [invoiceDate, setInvoiceDate] = useState("");
   const [notes, setNotes] = useState("");
   const [showSignaturePad, setShowSignaturePad] = useState(false);
   const signatureCanvasRef = useRef<HTMLCanvasElement>(null);
   const [signature, setSignature] = useState<string>("");
   const [isDrawing, setIsDrawing] = useState(false);
+
+  // Initialize invoice date on client side to prevent hydration mismatch
+  React.useEffect(() => {
+    setInvoiceDate(new Date().toISOString().split("T")[0]);
+  }, []);
 
   // Drawing functions
   const startDrawing = (e: React.MouseEvent<HTMLCanvasElement>) => {

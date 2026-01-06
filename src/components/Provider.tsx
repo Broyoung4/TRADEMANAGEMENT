@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useEffect, createContext } from 'react'
+import React, { useState, useEffect, useLayoutEffect, createContext } from 'react'
 
 import { SessionProvider } from 'next-auth/react';
 
@@ -8,8 +8,10 @@ export const ThemeContext = createContext();
 const Provider = ({ children, session }) => {
     const [isDarkMode, setIsDarkMode] = useState(false);
     const [currentTheme, setCurrentTheme] = useState("midnight");
+    const [isHydrated, setIsHydrated] = useState(false);
 
-    useEffect(() => {
+    // Use useLayoutEffect to sync theme before paint
+    useLayoutEffect(() => {
         // Load theme preferences from localStorage
         const savedTheme = localStorage.getItem("theme");
         const savedColorTheme = localStorage.getItem("colorTheme");
@@ -20,6 +22,7 @@ const Provider = ({ children, session }) => {
         if (savedColorTheme) {
             setCurrentTheme(savedColorTheme);
         }
+        setIsHydrated(true);
     }, []);
 
     return (
