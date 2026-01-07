@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Provider from "@/components/Provider";
 import Nav from "@/components/Nav";
+import FooterYear from "@/components/FooterYear";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,7 +38,7 @@ export default function RootLayout({
               {children}
             </main>
             <footer className="bg-gray-800 text-white py-4 text-center">
-              &copy; {new Date().getFullYear()} Trade Track. All rights
+              &copy; <FooterYear /> Trade Track. All rights
               reserved.
             </footer>
           </div>
