@@ -226,6 +226,16 @@ export default function TradeApp() {
 
   const [totalProfit, setTotalProfit] = useState(0);
 
+  // State for undo/redo functionality
+  interface UndoRedoEntry {
+    saleId: string;
+    itemId: string;
+    quantitySoldInStockUnits: number;
+    profitFromSale: number;
+  }
+  const [undoStack, setUndoStack] = useState<UndoRedoEntry[]>([]);
+  const [redoStack, setRedoStack] = useState<UndoRedoEntry[]>([]);
+
   // Effect to apply dark mode class to HTML element
   useEffect(() => {
     if (isDarkMode) {
@@ -693,6 +703,20 @@ export default function TradeApp() {
         );
 
         setTotalProfit((prevProfit) => prevProfit + profitForThisSale);
+
+        // Add to undo stack
+        setUndoStack((prevStack) => [
+          ...prevStack,
+          {
+            saleId: createdSale._id,
+            itemId: selectedItemId,
+            quantitySoldInStockUnits,
+            profitFromSale: profitForThisSale,
+          },
+        ]);
+        // Clear redo stack when new action is taken
+        setRedoStack([]);
+
         alert(
           `Sale recorded for ${
             itemInInventory.itemName
@@ -741,6 +765,119 @@ export default function TradeApp() {
       } catch (error) {
         alert(`Error deleting sale: ${error.message}`);
       }
+    }
+  };
+
+  const handleUndoSale = async () => {
+    if (undoStack.length === 0) {
+      alert("No sales to undo.");
+      return;
+    }
+
+    const latestSale = undoStack[undoStack.length - 1];
+    const { saleId, itemId, quantitySoldInStockUnits, profitFromSale } =
+      latestSale;
+
+    try {
+      // Delete the sale from the database
+      const response = await fetch(`/api/sales/${saleId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        // Remove from sales
+        setSales((prev) => prev.filter((s) => s._id !== saleId));
+
+        // Restore inventory
+        setInventory((prevInv) =>
+          prevInv.map((item) =>
+            item._id === itemId
+              ? {
+                  ...item,
+                  quantity: item.quantity + quantitySoldInStockUnits,
+                }
+              : item
+          )
+        );
+
+        // Adjust total profit
+        setTotalProfit((prevProfit) => prevProfit - profitFromSale);
+
+        // Move from undo stack to redo stack
+        setUndoStack((prev) => prev.slice(0, -1));
+        setRedoStack((prev) => [...prev, latestSale]);
+
+        alert("Sale undone successfully. Inventory restored.");
+      } else {
+        alert("Failed to undo sale.");
+      }
+    } catch (error) {
+      alert(`Error undoing sale: ${error.message}`);
+    }
+  };
+
+  const handleRedoSale = async () => {
+    if (redoStack.length === 0) {
+      alert("No sales to redo.");
+      return;
+    }
+
+    const latestUndone = redoStack[redoStack.length - 1];
+    const { saleId, itemId, quantitySoldInStockUnits, profitFromSale } =
+      latestUndone;
+
+    try {
+      // Get the sale details from the sales that were undone
+      // We need to recreate the sale in the database
+      const saleToRestore = sales.find((s) => s._id === saleId);
+
+      if (saleToRestore) {
+        // POST the sale back
+        const response = await fetch("/api/sales", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            itemId: saleToRestore.itemId,
+            quantitySold: saleToRestore.quantitySold,
+            sellingPrice: saleToRestore.sellingPrice,
+            profit: saleToRestore.profit,
+            unitSold: saleToRestore.unitSold,
+            costPriceAtTimeOfSale: saleToRestore.costPriceAtTimeOfSale,
+          }),
+        });
+
+        if (response.ok) {
+          const restoredSale = await response.json();
+
+          // Add back to sales
+          setSales((prev) => [...prev, restoredSale]);
+
+          // Deduct from inventory
+          setInventory((prevInv) =>
+            prevInv.map((item) =>
+              item._id === itemId
+                ? {
+                    ...item,
+                    quantity: item.quantity - quantitySoldInStockUnits,
+                  }
+                : item
+            )
+          );
+
+          // Adjust total profit
+          setTotalProfit((prevProfit) => prevProfit + profitFromSale);
+
+          // Move from redo stack back to undo stack
+          setRedoStack((prev) => prev.slice(0, -1));
+          setUndoStack((prev) => [...prev, latestUndone]);
+
+          alert("Sale redone successfully.");
+        } else {
+          alert("Failed to redo sale.");
+        }
+      }
+    } catch (error) {
+      alert(`Error redoing sale: ${error.message}`);
     }
   };
 
@@ -1377,22 +1514,50 @@ export default function TradeApp() {
                     />
                   </div>
                 </div>
-                <button
-                  type="submit"
-                  className={`w-full font-medium py-3 px-4 rounded-lg transition-all shadow-md ${
-                    isDarkMode
-                      ? `${THEMES[currentTheme].dark.accentLight} hover:${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent} disabled:bg-slate-700 disabled:text-slate-400`
-                      : "bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-slate-300 disabled:text-slate-500"
-                  } disabled:cursor-not-allowed`}
-                  disabled={
-                    !selectedItemId ||
-                    itemsAvailableForSale.length === 0 ||
-                    !saleQuantity ||
-                    !sellingPrice
-                  }
-                >
-                  Record Sale
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    className={`flex-1 font-medium py-3 px-4 rounded-lg transition-all shadow-md ${
+                      isDarkMode
+                        ? `${THEMES[currentTheme].dark.accentLight} hover:${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent} disabled:bg-slate-700 disabled:text-slate-400`
+                        : "bg-emerald-600 hover:bg-emerald-700 text-white disabled:bg-slate-300 disabled:text-slate-500"
+                    } disabled:cursor-not-allowed`}
+                    disabled={
+                      !selectedItemId ||
+                      itemsAvailableForSale.length === 0 ||
+                      !saleQuantity ||
+                      !sellingPrice
+                    }
+                  >
+                    Record Sale
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleUndoSale}
+                    className={`flex-1 font-medium py-3 px-4 rounded-lg transition-all shadow-md ${
+                      isDarkMode
+                        ? `${undoStack.length > 0 ? "bg-orange-900 hover:bg-orange-800" : "bg-slate-700"} ${THEMES[currentTheme].dark.text} disabled:text-slate-400`
+                        : `${undoStack.length > 0 ? "bg-orange-500 hover:bg-orange-600" : "bg-slate-400"} text-white disabled:text-slate-500`
+                    } disabled:cursor-not-allowed`}
+                    disabled={undoStack.length === 0}
+                    title={`Undo (${undoStack.length} available)`}
+                  >
+                    ↶ Undo
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleRedoSale}
+                    className={`flex-1 font-medium py-3 px-4 rounded-lg transition-all shadow-md ${
+                      isDarkMode
+                        ? `${redoStack.length > 0 ? "bg-blue-900 hover:bg-blue-800" : "bg-slate-700"} ${THEMES[currentTheme].dark.text} disabled:text-slate-400`
+                        : `${redoStack.length > 0 ? "bg-blue-500 hover:bg-blue-600" : "bg-slate-400"} text-white disabled:text-slate-500`
+                    } disabled:cursor-not-allowed`}
+                    disabled={redoStack.length === 0}
+                    title={`Redo (${redoStack.length} available)`}
+                  >
+                    ↷ Redo
+                  </button>
+                </div>
               </form>
             )}
           </section>
