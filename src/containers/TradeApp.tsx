@@ -3,9 +3,10 @@ import React, { useState, useEffect, useContext, useMemo } from "react";
 import AnalyticsPage from "./AnalyticsPage"; // Assuming this exists
 import SellingPriceList from "./SellingPriceList"; // Assuming this exists
 import InvoiceReceipt from "./InvoiceReceipt"; // Assuming this exists
+import DebtTracker from "./DebtTracker"; // Debt tracking
 import { ThemeContext } from "@/components/Provider";
 
-// Theme Configuration
+// Modern & Elegant Theme Configuration
 const THEMES = {
   midnight: {
     name: "Midnight Blue",
@@ -16,9 +17,21 @@ const THEMES = {
       text: "text-slate-100",
       textSecondary: "text-slate-400",
       border: "border-slate-700",
+      borderLight: "border-slate-600",
       accent: "text-blue-400",
-      accentBg: "bg-blue-900",
-      accentLight: "bg-blue-800",
+      accentBg: "bg-blue-900/50",
+      accentLight: "bg-blue-800/40",
+      accentBorder: "border-blue-700",
+      accentText: "text-blue-300",
+      shadow: "shadow-xl shadow-blue-900/20",
+      gradient: "from-blue-900 to-blue-800",
+      hoverBg: "hover:bg-slate-800",
+      buttonBg: "bg-blue-600",
+      buttonHover: "hover:bg-blue-500",
+      buttonText: "text-white",
+      inputBg: "bg-slate-800",
+      inputBorder: "border-slate-700",
+      inputFocus: "focus:border-blue-500 focus:ring-blue-500/20",
     },
   },
   forest: {
@@ -28,11 +41,23 @@ const THEMES = {
       bgSecondary: "bg-emerald-900",
       bgTertiary: "bg-emerald-800",
       text: "text-emerald-50",
-      textSecondary: "text-emerald-400",
+      textSecondary: "text-emerald-300",
       border: "border-emerald-700",
-      accent: "text-green-400",
-      accentBg: "bg-green-900",
-      accentLight: "bg-green-800",
+      borderLight: "border-emerald-600",
+      accent: "text-emerald-400",
+      accentBg: "bg-emerald-900/50",
+      accentLight: "bg-emerald-800/40",
+      accentBorder: "border-emerald-700",
+      accentText: "text-emerald-300",
+      shadow: "shadow-xl shadow-emerald-900/20",
+      gradient: "from-emerald-900 to-emerald-800",
+      hoverBg: "hover:bg-emerald-800",
+      buttonBg: "bg-emerald-600",
+      buttonHover: "hover:bg-emerald-500",
+      buttonText: "text-white",
+      inputBg: "bg-emerald-800",
+      inputBorder: "border-emerald-700",
+      inputFocus: "focus:border-emerald-500 focus:ring-emerald-500/20",
     },
   },
   sunset: {
@@ -42,11 +67,23 @@ const THEMES = {
       bgSecondary: "bg-orange-900",
       bgTertiary: "bg-orange-800",
       text: "text-orange-50",
-      textSecondary: "text-orange-300",
+      textSecondary: "text-orange-200",
       border: "border-orange-700",
+      borderLight: "border-orange-600",
       accent: "text-amber-400",
-      accentBg: "bg-amber-900",
-      accentLight: "bg-amber-800",
+      accentBg: "bg-amber-900/50",
+      accentLight: "bg-amber-800/40",
+      accentBorder: "border-amber-700",
+      accentText: "text-amber-300",
+      shadow: "shadow-xl shadow-amber-900/20",
+      gradient: "from-amber-900 to-orange-800",
+      hoverBg: "hover:bg-orange-800",
+      buttonBg: "bg-amber-600",
+      buttonHover: "hover:bg-amber-500",
+      buttonText: "text-white",
+      inputBg: "bg-orange-800",
+      inputBorder: "border-orange-700",
+      inputFocus: "focus:border-amber-500 focus:ring-amber-500/20",
     },
   },
   amethyst: {
@@ -56,11 +93,23 @@ const THEMES = {
       bgSecondary: "bg-purple-900",
       bgTertiary: "bg-purple-800",
       text: "text-purple-50",
-      textSecondary: "text-purple-300",
+      textSecondary: "text-purple-200",
       border: "border-purple-700",
+      borderLight: "border-purple-600",
       accent: "text-fuchsia-400",
-      accentBg: "bg-fuchsia-900",
-      accentLight: "bg-fuchsia-800",
+      accentBg: "bg-fuchsia-900/50",
+      accentLight: "bg-fuchsia-800/40",
+      accentBorder: "border-fuchsia-700",
+      accentText: "text-fuchsia-300",
+      shadow: "shadow-xl shadow-fuchsia-900/20",
+      gradient: "from-fuchsia-900 to-purple-800",
+      hoverBg: "hover:bg-purple-800",
+      buttonBg: "bg-fuchsia-600",
+      buttonHover: "hover:bg-fuchsia-500",
+      buttonText: "text-white",
+      inputBg: "bg-purple-800",
+      inputBorder: "border-purple-700",
+      inputFocus: "focus:border-fuchsia-500 focus:ring-fuchsia-500/20",
     },
   },
   crimson: {
@@ -70,11 +119,23 @@ const THEMES = {
       bgSecondary: "bg-red-900",
       bgTertiary: "bg-red-800",
       text: "text-red-50",
-      textSecondary: "text-red-300",
+      textSecondary: "text-red-200",
       border: "border-red-700",
+      borderLight: "border-red-600",
       accent: "text-rose-400",
-      accentBg: "bg-rose-900",
-      accentLight: "bg-rose-800",
+      accentBg: "bg-rose-900/50",
+      accentLight: "bg-rose-800/40",
+      accentBorder: "border-rose-700",
+      accentText: "text-rose-300",
+      shadow: "shadow-xl shadow-rose-900/20",
+      gradient: "from-rose-900 to-red-800",
+      hoverBg: "hover:bg-red-800",
+      buttonBg: "bg-rose-600",
+      buttonHover: "hover:bg-rose-500",
+      buttonText: "text-white",
+      inputBg: "bg-red-800",
+      inputBorder: "border-red-700",
+      inputFocus: "focus:border-rose-500 focus:ring-rose-500/20",
     },
   },
   ocean: {
@@ -84,11 +145,23 @@ const THEMES = {
       bgSecondary: "bg-cyan-900",
       bgTertiary: "bg-cyan-800",
       text: "text-cyan-50",
-      textSecondary: "text-cyan-300",
+      textSecondary: "text-cyan-200",
       border: "border-cyan-700",
+      borderLight: "border-cyan-600",
       accent: "text-cyan-400",
-      accentBg: "bg-cyan-900",
-      accentLight: "bg-cyan-800",
+      accentBg: "bg-cyan-900/50",
+      accentLight: "bg-cyan-800/40",
+      accentBorder: "border-cyan-700",
+      accentText: "text-cyan-300",
+      shadow: "shadow-xl shadow-cyan-900/20",
+      gradient: "from-cyan-900 to-cyan-800",
+      hoverBg: "hover:bg-cyan-800",
+      buttonBg: "bg-cyan-600",
+      buttonHover: "hover:bg-cyan-500",
+      buttonText: "text-white",
+      inputBg: "bg-cyan-800",
+      inputBorder: "border-cyan-700",
+      inputFocus: "focus:border-cyan-500 focus:ring-cyan-500/20",
     },
   },
 };
@@ -223,6 +296,10 @@ export default function TradeApp() {
   const [selectedItemId, setSelectedItemId] = useState("");
   const [saleQuantity, setSaleQuantity] = useState("");
   const [sellingPrice, setSellingPrice] = useState("");
+  const [isPaid, setIsPaid] = useState(true); // True = paid, False = debt
+  const [debtAmountPaid, setDebtAmountPaid] = useState("");
+  const [customerName, setCustomerName] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("cash"); // cash or transfer
 
   const [totalProfit, setTotalProfit] = useState(0);
 
@@ -232,6 +309,20 @@ export default function TradeApp() {
     itemId: string;
     quantitySoldInStockUnits: number;
     profitFromSale: number;
+    isDebt?: boolean;
+    // Complete sale data for redo
+    itemName?: string;
+    quantitySold?: number;
+    sellingPrice?: number;
+    unitSold?: string;
+    costPriceAtTimeOfSale?: number;
+    saleDate?: string;
+    paymentMethod?: string;
+    // Debt data if applicable
+    customerName?: string;
+    totalDebtAmount?: number;
+    amountPaidOnDebt?: number;
+    originalProfit?: number;
   }
   const [undoStack, setUndoStack] = useState<UndoRedoEntry[]>([]);
   const [redoStack, setRedoStack] = useState<UndoRedoEntry[]>([]);
@@ -618,6 +709,22 @@ export default function TradeApp() {
     }
   };
 
+  const handleDebtSettled = async (profitAmount: number) => {
+    // When a debt is settled, add the profit to total profit
+    setTotalProfit((prevProfit) => prevProfit + profitAmount);
+    
+    // Refresh sales to show updated profit and debt status
+    try {
+      const response = await fetch("/api/sales");
+      if (response.ok) {
+        const updatedSales = await response.json();
+        setSales(updatedSales);
+      }
+    } catch (error) {
+      console.error("Error refreshing sales after debt settlement:", error);
+    }
+  };
+
   const handleRecordSale = async (e) => {
     e.preventDefault();
     if (!selectedItemId || !saleQuantity || !sellingPrice) {
@@ -661,6 +768,15 @@ export default function TradeApp() {
       return;
     }
 
+    // If it's a debt, validate debt amount paid
+    if (!isPaid) {
+      const debtPaid = debtAmountPaid ? parseFloat(debtAmountPaid) : 0;
+      if (isNaN(debtPaid) || debtPaid < 0) {
+        alert("Invalid amount paid for debt. Please enter a valid number.");
+        return;
+      }
+    }
+
     const costPricePerStockUnit = itemInInventory.price;
     const costPricePerSellingUnit = costPricePerStockUnit / conversionFactor;
     const profitForThisSale =
@@ -674,11 +790,15 @@ export default function TradeApp() {
       itemName: itemInInventory.itemName,
       quantitySold: quantitySoldInSellingUnits,
       sellingPrice: sellingPricePerSellingUnit,
-      profit: profitForThisSale,
+      profit: isPaid ? profitForThisSale : 0, // Don't record profit for debts
       unitSold: itemInInventory.sellingUnit,
       costPriceAtTimeOfSale: costPricePerSellingUnit, // Cost per selling unit
-      saleDate: new Date().toISOString(), // Client-side date, server should preferably set its own
+      saleDate: new Date().toISOString(),
+      isDebt: !isPaid, // Add flag to mark this as debt sale
+      paymentMethod, // Add payment method
     };
+
+    console.log("Recording sale with payment method:", paymentMethod, "Full sale object:", newSale);
 
     try {
       const response = await fetch("/api/sales", {
@@ -702,29 +822,125 @@ export default function TradeApp() {
           )
         );
 
-        setTotalProfit((prevProfit) => prevProfit + profitForThisSale);
+        // Only add profit if it's a paid sale, not a debt
+        if (isPaid) {
+          setTotalProfit((prevProfit) => prevProfit + profitForThisSale);
+        }
 
-        // Add to undo stack
-        setUndoStack((prevStack) => [
-          ...prevStack,
-          {
-            saleId: createdSale._id,
-            itemId: selectedItemId,
-            quantitySoldInStockUnits,
-            profitFromSale: profitForThisSale,
-          },
-        ]);
+        // Add to undo stack with complete sale data for redo
+        const undoEntry: UndoRedoEntry = {
+          saleId: createdSale._id,
+          itemId: selectedItemId,
+          quantitySoldInStockUnits,
+          profitFromSale: isPaid ? profitForThisSale : 0, // Don't count debt profit
+          isDebt: !isPaid, // Store debt flag
+          // Store complete sale data
+          itemName: itemInInventory.itemName,
+          quantitySold: quantitySoldInSellingUnits,
+          sellingPrice: sellingPricePerSellingUnit,
+          unitSold: itemInInventory.sellingUnit,
+          costPriceAtTimeOfSale: costPricePerSellingUnit, // Cost per SELLING unit (not stock unit)
+          saleDate: new Date().toISOString(),
+          paymentMethod,
+          // Store debt data if applicable
+          customerName: customerName.trim() || "Unknown Customer",
+          totalDebtAmount: sellingPricePerSellingUnit * quantitySoldInSellingUnits,
+          amountPaidOnDebt: debtAmountPaid ? parseFloat(debtAmountPaid) : 0,
+          originalProfit: profitForThisSale,
+        };
+        setUndoStack((prevStack) => [...prevStack, undoEntry]);
         // Clear redo stack when new action is taken
         setRedoStack([]);
+
+        // If it's a debt, create a debt record
+        if (!isPaid) {
+          const totalDebtAmount = sellingPricePerSellingUnit * quantitySoldInSellingUnits;
+          const amountPaidOnDebt = debtAmountPaid ? parseFloat(debtAmountPaid) : 0;
+
+          // Validate debt data before sending
+          if (!createdSale._id) {
+            console.error("Sale ID is missing:", createdSale);
+            alert("Sale recorded but debt has no ID. Please refresh and try again.");
+            return;
+          }
+          if (isNaN(totalDebtAmount) || totalDebtAmount <= 0) {
+            console.error("Invalid total debt amount:", totalDebtAmount);
+            alert("Sale recorded but debt amount is invalid. Please add debt manually.");
+            return;
+          }
+
+          try {
+            const debtPayload = {
+              saleId: String(createdSale._id),
+              itemName: String(itemInInventory.itemName),
+              customerName: String(customerName.trim() || "Unknown Customer"),
+              totalAmount: Number(totalDebtAmount),
+              amountPaid: Number(amountPaidOnDebt),
+              originalProfit: Number(profitForThisSale),
+            };
+
+            console.log("Creating debt with payload:", debtPayload);
+
+            const debtResponse = await fetch("/api/debts", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(debtPayload),
+            });
+
+            console.log("Debt API response status:", debtResponse.status);
+
+            if (!debtResponse.ok) {
+              let errorMessage = `HTTP ${debtResponse.status}: ${debtResponse.statusText}`;
+              try {
+                const contentType = debtResponse.headers.get("content-type");
+                if (contentType && contentType.includes("application/json")) {
+                  const errorJson = await debtResponse.json();
+                  errorMessage = errorJson.message || errorJson.error || JSON.stringify(errorJson);
+                } else {
+                  const errorText = await debtResponse.text();
+                  errorMessage = errorText || errorMessage;
+                }
+              } catch (parseError) {
+                console.error("Could not parse error response:", parseError);
+              }
+              console.error("Error creating debt record:", errorMessage);
+              alert(`⚠️ Sale recorded but debt tracking failed: ${errorMessage}\n\nPlease go to Debts section and add it manually.`);
+            } else {
+              try {
+                const createdDebt = await debtResponse.json();
+                console.log("✅ Debt created successfully:", createdDebt);
+                // Show success message
+                const debtSuccessMsg = `Debt successfully recorded for ${customerName || 'customer'}`;
+                console.log(debtSuccessMsg);
+              } catch (parseError) {
+                console.error("Could not parse debt response:", parseError);
+                alert("Debt might have been created but response parsing failed. Check Debts section.");
+              }
+            }
+          } catch (debtError) {
+            console.error("Network error creating debt record:", debtError);
+            alert(`⚠️ Sale recorded but network error during debt creation: ${debtError.message}\n\nPlease add debt manually in Debts section.`);
+          }
+        }
 
         alert(
           `Sale recorded for ${
             itemInInventory.itemName
-          }. Profit: ${formatCurrency(profitForThisSale)}`
+          }${
+            isPaid 
+              ? `. Profit: ${formatCurrency(profitForThisSale)}` 
+              : `. Debt: ${formatCurrency(sellingPricePerSellingUnit * quantitySoldInSellingUnits)} (unresolved)`
+          }`
         );
+        
+        // Reset form
         setSelectedItemId("");
         setSaleQuantity("");
         setSellingPrice("");
+        setIsPaid(true);
+        setDebtAmountPaid("");
+        setCustomerName("");
+        setPaymentMethod("cash");
       } else {
         const errorData = await response.text(); // Or response.json() if your API sends JSON errors
         alert(`Failed to record sale: ${errorData.message || errorData}`);
@@ -775,7 +991,7 @@ export default function TradeApp() {
     }
 
     const latestSale = undoStack[undoStack.length - 1];
-    const { saleId, itemId, quantitySoldInStockUnits, profitFromSale } =
+    const { saleId, itemId, quantitySoldInStockUnits, profitFromSale, isDebt } =
       latestSale;
 
     try {
@@ -803,6 +1019,29 @@ export default function TradeApp() {
         // Adjust total profit
         setTotalProfit((prevProfit) => prevProfit - profitFromSale);
 
+        // If this was a debt sale, also delete the debt record
+        if (isDebt) {
+          try {
+            // Find the debt record associated with this sale
+            const debtsResponse = await fetch("/api/debts");
+            if (debtsResponse.ok) {
+              const debts = await debtsResponse.json();
+              const debtRecord = debts.find((d) => d.saleId === saleId);
+              
+              if (debtRecord) {
+                // Delete the debt record
+                await fetch(`/api/debts/${debtRecord._id}`, {
+                  method: "DELETE",
+                });
+                console.log("Debt record deleted for sale:", saleId);
+              }
+            }
+          } catch (error) {
+            console.error("Error deleting debt record:", error);
+            // Don't fail the undo if debt deletion fails - the sale was already undone
+          }
+        }
+
         // Move from undo stack to redo stack
         setUndoStack((prev) => prev.slice(0, -1));
         setRedoStack((prev) => [...prev, latestSale]);
@@ -823,58 +1062,117 @@ export default function TradeApp() {
     }
 
     const latestUndone = redoStack[redoStack.length - 1];
-    const { saleId, itemId, quantitySoldInStockUnits, profitFromSale } =
-      latestUndone;
+    const {
+      itemId,
+      quantitySoldInStockUnits,
+      profitFromSale,
+      isDebt,
+      itemName,
+      quantitySold,
+      sellingPrice,
+      unitSold,
+      costPriceAtTimeOfSale,
+      saleDate,
+      paymentMethod,
+      customerName,
+      totalDebtAmount,
+      amountPaidOnDebt,
+      originalProfit,
+    } = latestUndone;
 
     try {
-      // Get the sale details from the sales that were undone
-      // We need to recreate the sale in the database
-      const saleToRestore = sales.find((s) => s._id === saleId);
+      // Recreate the sale using stored data
+      const salePayload = {
+        itemId,
+        itemName,
+        quantitySold,
+        sellingPrice,
+        profit: isDebt ? 0 : profitFromSale, // Don't record profit for debts
+        unitSold,
+        costPriceAtTimeOfSale,
+        saleDate,
+        isDebt: isDebt || false,
+        paymentMethod: paymentMethod || "cash",
+      };
 
-      if (saleToRestore) {
-        // POST the sale back
-        const response = await fetch("/api/sales", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            itemId: saleToRestore.itemId,
-            quantitySold: saleToRestore.quantitySold,
-            sellingPrice: saleToRestore.sellingPrice,
-            profit: saleToRestore.profit,
-            unitSold: saleToRestore.unitSold,
-            costPriceAtTimeOfSale: saleToRestore.costPriceAtTimeOfSale,
-          }),
-        });
+      console.log("Redo sale payload:", salePayload);
 
-        if (response.ok) {
-          const restoredSale = await response.json();
+      const response = await fetch("/api/sales", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(salePayload),
+      });
 
-          // Add back to sales
-          setSales((prev) => [...prev, restoredSale]);
+      if (response.ok) {
+        const restoredSale = await response.json();
+        console.log("✅ Sale restored successfully:", restoredSale);
 
-          // Deduct from inventory
-          setInventory((prevInv) =>
-            prevInv.map((item) =>
-              item._id === itemId
-                ? {
-                    ...item,
-                    quantity: item.quantity - quantitySoldInStockUnits,
-                  }
-                : item
-            )
-          );
+        // Add back to sales
+        setSales((prev) => [...prev, restoredSale]);
 
-          // Adjust total profit
+        // Deduct from inventory
+        setInventory((prevInv) =>
+          prevInv.map((item) =>
+            item._id === itemId
+              ? {
+                  ...item,
+                  quantity: item.quantity - quantitySoldInStockUnits,
+                }
+              : item
+          )
+        );
+
+        // Adjust total profit only for paid sales
+        if (!isDebt) {
           setTotalProfit((prevProfit) => prevProfit + profitFromSale);
-
-          // Move from redo stack back to undo stack
-          setRedoStack((prev) => prev.slice(0, -1));
-          setUndoStack((prev) => [...prev, latestUndone]);
-
-          alert("Sale redone successfully.");
-        } else {
-          alert("Failed to redo sale.");
         }
+
+        // If this was a debt sale, recreate the debt record
+        if (isDebt) {
+          try {
+            const debtPayload = {
+              saleId: String(restoredSale._id),
+              itemName: String(itemName || "Unknown"),
+              customerName: String(customerName || "Unknown Customer"),
+              totalAmount: Number(totalDebtAmount || 0),
+              amountPaid: Number(amountPaidOnDebt || 0),
+              originalProfit: Number(originalProfit || 0),
+            };
+
+            console.log("Redo debt payload:", debtPayload);
+
+            const debtResponse = await fetch("/api/debts", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(debtPayload),
+            });
+
+            if (debtResponse.ok) {
+              console.log("✅ Debt recreated successfully on redo");
+            } else {
+              const errorData = await debtResponse.json();
+              console.error("Failed to recreate debt record on redo:", errorData);
+              alert(
+                "Sale redone but debt record recreation failed. Please add it manually."
+              );
+            }
+          } catch (error) {
+            console.error("Error recreating debt record:", error);
+            alert(
+              "Sale redone but debt record recreation failed. Please add it manually."
+            );
+          }
+        }
+
+        // Move from redo stack back to undo stack
+        setRedoStack((prev) => prev.slice(0, -1));
+        setUndoStack((prev) => [...prev, latestUndone]);
+
+        alert("Sale redone successfully.");
+      } else {
+        const errorData = await response.json();
+        console.error("Failed to redo sale. Response:", errorData);
+        alert(`Failed to redo sale: ${errorData.message || "Unknown error"}`);
       }
     } catch (error) {
       alert(`Error redoing sale: ${error.message}`);
@@ -941,6 +1239,17 @@ export default function TradeApp() {
           onBack={() => setCurrentView("dashboard")}
           formatCurrency={formatCurrency}
           isDarkMode={isDarkMode}
+        />
+      );
+    }
+
+    if (currentView === "debts") {
+      return (
+        <DebtTracker
+          theme={THEMES[currentTheme]}
+          isDarkMode={isDarkMode}
+          onBack={() => setCurrentView("dashboard")}
+          onDebtSettled={handleDebtSettled}
         />
       );
     }
@@ -1070,6 +1379,18 @@ export default function TradeApp() {
                 }
               >
                 🧾 Invoice
+              </button>
+
+              <button
+                onClick={() => setCurrentView("debts")}
+                className={`px-4 py-2.5 rounded-lg font-medium transition-all shadow-md ${
+                  isDarkMode
+                    ? `${THEMES[currentTheme].dark.accentLight} hover:${THEMES[currentTheme].dark.accentBg} ${THEMES[currentTheme].dark.accent}`
+                    : "bg-red-600 hover:bg-red-700 text-white"
+                }`}
+                title="Manage customer debts and payments"
+              >
+                💳 Debts
               </button>
             </div>
           </div>
@@ -1514,6 +1835,134 @@ export default function TradeApp() {
                     />
                   </div>
                 </div>
+
+                {/* Payment Status Toggle */}
+                <div className={`p-4 rounded-lg ${isDarkMode ? THEMES[currentTheme].dark.bgTertiary : "bg-slate-100"}`}>
+                  <label className={`block text-sm font-medium ${isDarkMode ? "text-slate-300" : "text-slate-700"} mb-3`}>
+                    Payment Status:
+                  </label>
+                  <div className="flex gap-4 items-center">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="paymentStatus"
+                        checked={isPaid}
+                        onChange={() => {
+                          setIsPaid(true);
+                          setDebtAmountPaid("");
+                          setCustomerName("");
+                        }}
+                        className="w-4 h-4"
+                      />
+                      <span className={`text-sm font-medium ${isDarkMode ? "text-slate-300" : "text-slate-700"}`}>
+                        ✓ Paid
+                      </span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="paymentStatus"
+                        checked={!isPaid}
+                        onChange={() => setIsPaid(false)}
+                        className="w-4 h-4"
+                      />
+                      <span className={`text-sm font-medium ${isDarkMode ? "text-slate-300" : "text-slate-700"}`}>
+                        💳 Debt
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Payment Method Selection */}
+                <div className={`p-4 rounded-lg ${isDarkMode ? THEMES[currentTheme].dark.bgTertiary : "bg-slate-100"}`}>
+                  <label className={`block text-sm font-medium ${isDarkMode ? "text-slate-300" : "text-slate-700"} mb-3`}>
+                    Payment Method:
+                  </label>
+                  <div className="flex gap-4 items-center">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="cash"
+                        checked={paymentMethod === "cash"}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="w-4 h-4"
+                      />
+                      <span className={`text-sm font-medium ${isDarkMode ? "text-slate-300" : "text-slate-700"}`}>
+                        💵 Cash
+                      </span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        value="transfer"
+                        checked={paymentMethod === "transfer"}
+                        onChange={(e) => setPaymentMethod(e.target.value)}
+                        className="w-4 h-4"
+                      />
+                      <span className={`text-sm font-medium ${isDarkMode ? "text-slate-300" : "text-slate-700"}`}>
+                        💳 Transfer
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                {/* Debt Fields - Show only when marked as debt */}
+                {!isPaid && (
+                  <div className="space-y-4 p-4 rounded-lg border-2 border-orange-500 bg-opacity-10" style={{backgroundColor: isDarkMode ? 'rgba(234, 179, 8, 0.1)' : 'rgba(255, 193, 7, 0.1)'}}>
+                    <div>
+                      <label
+                        htmlFor="customerName"
+                        className={`block text-sm font-medium ${
+                          isDarkMode ? "text-slate-300" : "text-slate-700"
+                        } mb-1`}
+                      >
+                        Customer Name (Optional):
+                      </label>
+                      <input
+                        type="text"
+                        id="customerName"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        placeholder="Enter customer name"
+                        className={`w-full p-3 border rounded-lg transition-all ${
+                          isDarkMode
+                            ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} placeholder-slate-500 focus:ring-2 ${THEMES[currentTheme].dark.accentBg}`
+                            : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-orange-500 focus:border-orange-500"
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="debtAmountPaid"
+                        className={`block text-sm font-medium ${
+                          isDarkMode ? "text-slate-300" : "text-slate-700"
+                        } mb-1`}
+                      >
+                        Amount Already Paid (If Any):
+                      </label>
+                      <input
+                        type="number"
+                        id="debtAmountPaid"
+                        value={debtAmountPaid}
+                        onChange={(e) => setDebtAmountPaid(e.target.value)}
+                        placeholder="0.00 (Leave blank or 0 if unpaid)"
+                        min="0"
+                        step="0.01"
+                        className={`w-full p-3 border rounded-lg transition-all ${
+                          isDarkMode
+                            ? `${THEMES[currentTheme].dark.bgTertiary} ${THEMES[currentTheme].dark.border} ${THEMES[currentTheme].dark.text} placeholder-slate-500 focus:ring-2 ${THEMES[currentTheme].dark.accentBg}`
+                            : "bg-white border-slate-300 text-slate-900 placeholder-slate-400 focus:ring-orange-500 focus:border-orange-500"
+                        }`}
+                      />
+                      <p className={`text-xs mt-1 ${isDarkMode ? "text-slate-400" : "text-slate-500"}`}>
+                        Leave blank or enter 0 if customer hasn't paid anything yet
+                      </p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex gap-2">
                   <button
                     type="submit"
@@ -1923,6 +2372,20 @@ export default function TradeApp() {
                         isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
                       } uppercase tracking-wider`}
                     >
+                      Debt Status
+                    </th>
+                    <th
+                      className={`px-3 py-3 text-left text-xs font-medium ${
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
+                      } uppercase tracking-wider`}
+                    >
+                      Payment Method
+                    </th>
+                    <th
+                      className={`px-3 py-3 text-left text-xs font-medium ${
+                        isDarkMode ? THEMES[currentTheme].dark.textSecondary : "text-slate-500"
+                      } uppercase tracking-wider`}
+                    >
                       Actions
                     </th>
                   </tr>
@@ -2007,7 +2470,11 @@ export default function TradeApp() {
                           </td>
                           <td
                             className={`px-3 py-4 whitespace-nowrap text-sm font-semibold ${
-                              sale.profit >= 0
+                              sale.isDebt
+                                ? isDarkMode
+                                  ? "text-orange-400"
+                                  : "text-orange-600"
+                                : sale.profit >= 0
                                 ? isDarkMode
                                   ? "text-green-400"
                                   : "text-green-600"
@@ -2016,7 +2483,34 @@ export default function TradeApp() {
                                 : "text-red-600"
                             }`}
                           >
-                            {formatCurrency(sale.profit)}
+                            {sale.isDebt ? "🔄 Unresolved" : formatCurrency(sale.profit)}
+                          </td>
+                          <td
+                            className={`px-3 py-4 whitespace-nowrap text-sm font-semibold`}
+                          >
+                            {sale.isDebt ? (
+                              <span className={isDarkMode ? "text-orange-400" : "text-orange-600"}>
+                                💳 Pending Debt
+                              </span>
+                            ) : (
+                              <span className={isDarkMode ? "text-green-400" : "text-green-600"}>
+                                ✓ Paid
+                              </span>
+                            )}
+                          </td>
+                          <td
+                            className={`px-3 py-4 whitespace-nowrap text-sm font-medium ${
+                              isDarkMode ? "text-gray-300" : "text-slate-600"
+                            }`}
+                          >
+                            {(() => {
+                              const method = sale.paymentMethod || "cash";
+                              return method === "transfer" ? (
+                                <span>💳 Transfer</span>
+                              ) : (
+                                <span>💵 Cash</span>
+                              );
+                            })()}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
                             <button

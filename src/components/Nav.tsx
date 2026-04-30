@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 import { signIn, signOut, useSession, getProviders } from "next-auth/react";
 import { ThemeContext } from "./Provider";
 
-// Theme Configuration
+// Modern & Elegant Theme Configuration for Nav
 const THEMES = {
   midnight: {
     name: "Midnight Blue",
@@ -18,12 +18,16 @@ const THEMES = {
       text: "text-slate-100",
       textSecondary: "text-slate-400",
       border: "border-slate-700",
+      borderLight: "border-slate-600",
       accent: "text-blue-400",
-      accentBg: "bg-blue-900",
-      accentLight: "bg-blue-800",
-      navBg: "bg-slate-900",
-      buttonBg: "bg-blue-700",
-      buttonHover: "hover:bg-blue-600",
+      accentBg: "bg-blue-900/40",
+      accentLight: "bg-blue-800/40",
+      navBg: "bg-slate-950/80",
+      buttonBg: "bg-blue-600",
+      buttonHover: "hover:bg-blue-500",
+      buttonText: "text-white",
+      navBorder: "border-slate-700/50",
+      navShadow: "shadow-lg shadow-blue-900/10",
     },
   },
   forest: {
@@ -32,14 +36,18 @@ const THEMES = {
       bg: "bg-emerald-950",
       bgSecondary: "bg-emerald-900",
       text: "text-emerald-50",
-      textSecondary: "text-emerald-400",
+      textSecondary: "text-emerald-300",
       border: "border-emerald-700",
-      accent: "text-green-400",
-      accentBg: "bg-green-900",
-      accentLight: "bg-green-800",
-      navBg: "bg-emerald-900",
-      buttonBg: "bg-green-700",
-      buttonHover: "hover:bg-green-600",
+      borderLight: "border-emerald-600",
+      accent: "text-emerald-400",
+      accentBg: "bg-emerald-900/40",
+      accentLight: "bg-emerald-800/40",
+      navBg: "bg-emerald-950/80",
+      buttonBg: "bg-emerald-600",
+      buttonHover: "hover:bg-emerald-500",
+      buttonText: "text-white",
+      navBorder: "border-emerald-700/50",
+      navShadow: "shadow-lg shadow-emerald-900/10",
     },
   },
   sunset: {
@@ -48,14 +56,18 @@ const THEMES = {
       bg: "bg-orange-950",
       bgSecondary: "bg-orange-900",
       text: "text-orange-50",
-      textSecondary: "text-orange-300",
+      textSecondary: "text-orange-200",
       border: "border-orange-700",
+      borderLight: "border-orange-600",
       accent: "text-amber-400",
-      accentBg: "bg-amber-900",
-      accentLight: "bg-amber-800",
-      navBg: "bg-orange-900",
-      buttonBg: "bg-amber-700",
-      buttonHover: "hover:bg-amber-600",
+      accentBg: "bg-amber-900/40",
+      accentLight: "bg-amber-800/40",
+      navBg: "bg-orange-950/80",
+      buttonBg: "bg-amber-600",
+      buttonHover: "hover:bg-amber-500",
+      buttonText: "text-white",
+      navBorder: "border-orange-700/50",
+      navShadow: "shadow-lg shadow-amber-900/10",
     },
   },
   amethyst: {
@@ -64,14 +76,18 @@ const THEMES = {
       bg: "bg-purple-950",
       bgSecondary: "bg-purple-900",
       text: "text-purple-50",
-      textSecondary: "text-purple-300",
+      textSecondary: "text-purple-200",
       border: "border-purple-700",
+      borderLight: "border-purple-600",
       accent: "text-fuchsia-400",
-      accentBg: "bg-fuchsia-900",
-      accentLight: "bg-fuchsia-800",
-      navBg: "bg-purple-900",
-      buttonBg: "bg-fuchsia-700",
-      buttonHover: "hover:bg-fuchsia-600",
+      accentBg: "bg-fuchsia-900/40",
+      accentLight: "bg-fuchsia-800/40",
+      navBg: "bg-purple-950/80",
+      buttonBg: "bg-fuchsia-600",
+      buttonHover: "hover:bg-fuchsia-500",
+      buttonText: "text-white",
+      navBorder: "border-purple-700/50",
+      navShadow: "shadow-lg shadow-fuchsia-900/10",
     },
   },
   crimson: {
@@ -80,14 +96,18 @@ const THEMES = {
       bg: "bg-red-950",
       bgSecondary: "bg-red-900",
       text: "text-red-50",
-      textSecondary: "text-red-300",
+      textSecondary: "text-red-200",
       border: "border-red-700",
+      borderLight: "border-red-600",
       accent: "text-rose-400",
-      accentBg: "bg-rose-900",
-      accentLight: "bg-rose-800",
-      navBg: "bg-red-900",
-      buttonBg: "bg-rose-700",
-      buttonHover: "hover:bg-rose-600",
+      accentBg: "bg-rose-900/40",
+      accentLight: "bg-rose-800/40",
+      navBg: "bg-red-950/80",
+      buttonBg: "bg-rose-600",
+      buttonHover: "hover:bg-rose-500",
+      buttonText: "text-white",
+      navBorder: "border-red-700/50",
+      navShadow: "shadow-lg shadow-rose-900/10",
     },
   },
   ocean: {
@@ -96,14 +116,18 @@ const THEMES = {
       bg: "bg-cyan-950",
       bgSecondary: "bg-cyan-900",
       text: "text-cyan-50",
-      textSecondary: "text-cyan-300",
+      textSecondary: "text-cyan-200",
       border: "border-cyan-700",
+      borderLight: "border-cyan-600",
       accent: "text-cyan-400",
-      accentBg: "bg-cyan-900",
-      accentLight: "bg-cyan-800",
-      navBg: "bg-cyan-900",
-      buttonBg: "bg-cyan-700",
-      buttonHover: "hover:bg-cyan-600",
+      accentBg: "bg-cyan-900/40",
+      accentLight: "bg-cyan-800/40",
+      navBg: "bg-cyan-950/80",
+      buttonBg: "bg-cyan-600",
+      buttonHover: "hover:bg-cyan-500",
+      buttonText: "text-white",
+      navBorder: "border-cyan-700/50",
+      navShadow: "shadow-lg shadow-cyan-900/10",
     },
   },
 };
@@ -133,19 +157,19 @@ const Nav = () => {
   console.log(`session`, session);
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b transition-all duration-300 ${
+    <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-xl transition-all duration-300 border-b ${
       isDarkMode && themeConfig 
-        ? `${themeConfig.navBg} border-slate-700 shadow-lg` 
-        : "bg-white/80 border-slate-200 shadow-md"
+        ? `${themeConfig.navBg} ${themeConfig.navBorder} ${themeConfig.navShadow}` 
+        : "bg-white/90 border-slate-200/50 shadow-lg"
     }`}>
-      <div className="max-w-7xl mx-auto w-full flex justify-between items-center px-4 sm:px-6 lg:px-8 py-4">
+      <div className="max-w-7xl mx-auto w-full flex justify-between items-center px-4 sm:px-6 lg:px-8 py-3.5">
         {/* Logo Section */}
         <Link className="flex gap-3 justify-center items-center group" href="/">
-          <div className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all ${
+          <div className={`w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 ${
             isDarkMode && themeConfig 
-              ? `${themeConfig.accentBg}` 
-              : "bg-blue-500"
-          }`}>
+              ? `${themeConfig.accentBg} border ${themeConfig.borderLight}` 
+              : "bg-gradient-to-br from-blue-500 to-blue-600"
+          } group-hover:scale-110`}>
             <Image
               className="object-contain"
               src={nextLogo}
@@ -154,7 +178,7 @@ const Nav = () => {
               height={24}
             />
           </div>
-          <p className={`text-lg font-bold hidden sm:block transition-colors group-hover:opacity-80 ${
+          <p className={`text-lg font-bold hidden sm:block transition-all duration-300 ${
             isDarkMode && themeConfig ? themeConfig.accent : "text-blue-600"
           }`}>
             Trade Track
@@ -162,24 +186,24 @@ const Nav = () => {
         </Link>
 
         {/* Desktop Navigation */}
-        <div className="hidden sm:flex gap-2">
+        <div className="hidden sm:flex gap-3">
         {session?.user ? (
-          <div className="flex gap-2 items-center">
+          <div className="flex gap-3 items-center">
             <Link
-              className={`px-4 py-2 rounded-lg font-medium transition-all ${
+              className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-300 ${
                 isDarkMode && themeConfig
-                  ? `${themeConfig.text} hover:${themeConfig.accentBg} border ${themeConfig.border}`
-                  : "text-slate-700 hover:bg-slate-100 border border-slate-300"
+                  ? `${themeConfig.text} border ${themeConfig.borderLight} ${themeConfig.accentBg} hover:border-opacity-100 border-opacity-50`
+                  : "text-slate-700 hover:bg-slate-50 border border-slate-300"
               }`}
               href="/"
             >
               Dashboard
             </Link>
             <button
-              className={`px-4 py-2 rounded-lg font-medium transition-all text-white shadow-md ${
+              className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-300 shadow-md hover:shadow-lg ${
                 isDarkMode && themeConfig
-                  ? `${themeConfig.buttonBg} ${themeConfig.buttonHover}`
-                  : "bg-blue-600 hover:bg-blue-700"
+                  ? `${themeConfig.buttonBg} ${themeConfig.buttonText} ${themeConfig.buttonHover} transform hover:scale-105`
+                  : "bg-blue-600 text-white hover:bg-blue-700 transform hover:scale-105"
               }`}
               type="button"
               onClick={signOut}
@@ -187,12 +211,16 @@ const Nav = () => {
               Sign Out
             </button>
 
-            <Link href="/profile" className="ml-2">
+            <Link href="/profile" className="ml-2 group">
               <Image
                 src={session?.user.image}
                 width={40}
                 height={40}
-                className="rounded-full ring-2 ring-offset-2 ring-slate-300 hover:ring-blue-500 transition-all"
+                className={`rounded-full ring-2 transition-all duration-300 group-hover:scale-110 group-hover:ring-offset-2 ${
+                  isDarkMode && themeConfig
+                    ? `ring-blue-500/50 group-hover:ring-blue-400`
+                    : "ring-blue-400 group-hover:ring-blue-500"
+                }`}
                 alt="profile"
               />
             </Link>
@@ -205,10 +233,10 @@ const Nav = () => {
                   type="button"
                   key={provider.name}
                   onClick={() => signIn(provider.id)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  className={`px-5 py-2.5 rounded-lg font-medium transition-all duration-300 ${
                     isDarkMode && themeConfig
-                      ? `${themeConfig.text} hover:${themeConfig.accentBg} border ${themeConfig.border}`
-                      : "text-slate-700 hover:bg-slate-100 border border-slate-300"
+                      ? `${themeConfig.text} border ${themeConfig.borderLight} ${themeConfig.accentBg} hover:border-opacity-100 border-opacity-50`
+                      : "text-slate-700 hover:bg-slate-50 border border-slate-300"
                   }`}
                 >
                   Sign In
@@ -226,21 +254,25 @@ const Nav = () => {
               src={session?.user.image}
               width={40}
               height={40}
-              className="rounded-full ring-2 ring-slate-300 cursor-pointer hover:ring-blue-500 transition-all"
+              className={`rounded-full ring-2 cursor-pointer transition-all duration-300 transform hover:scale-110 ${
+                isDarkMode && themeConfig
+                  ? "ring-blue-500/50 hover:ring-blue-400"
+                  : "ring-blue-400 hover:ring-blue-500"
+              }`}
               alt="profile"
               onClick={() => {setToggleDropdown((prev) => !prev)}}
             />
             {toggleDropdown && (
-              <div className={`absolute top-16 right-0 min-w-max rounded-xl shadow-lg backdrop-blur-md fade-in ${
+              <div className={`absolute top-16 right-0 min-w-max rounded-xl shadow-2xl backdrop-blur-md fade-in border ${
                 isDarkMode && themeConfig
-                  ? `${themeConfig.bgSecondary} border ${themeConfig.border}`
-                  : "bg-white border border-slate-200"
+                  ? `${themeConfig.bgSecondary} ${themeConfig.borderLight}`
+                  : "bg-white/95 border border-slate-200"
               }`}>
                 <Link 
                   href='/profile' 
-                  className={`block px-4 py-3 font-medium transition-colors border-b ${
+                  className={`block px-5 py-3.5 font-medium transition-all duration-300 border-b ${
                     isDarkMode && themeConfig
-                      ? `${themeConfig.text} border-slate-700 hover:${themeConfig.accentBg}`
+                      ? `${themeConfig.text} ${themeConfig.borderLight} hover:${themeConfig.accentBg}`
                       : "text-slate-700 border-slate-200 hover:bg-slate-50"
                   }`}
                   onClick={()=> setToggleDropdown(false)}
@@ -249,9 +281,9 @@ const Nav = () => {
                 </Link>
                 <Link
                   href="/"
-                  className={`block px-4 py-3 font-medium transition-colors border-b ${
-                    isDarkMode && themeContext
-                      ? `${themeConfig.text} border-slate-700 hover:${themeConfig.accentBg}`
+                  className={`block px-5 py-3.5 font-medium transition-all duration-300 border-b ${
+                    isDarkMode && themeConfig
+                      ? `${themeConfig.text} ${themeConfig.borderLight} hover:${themeConfig.accentBg}`
                       : "text-slate-700 border-slate-200 hover:bg-slate-50"
                   }`}
                   onClick={() => setToggleDropdown(false)}
@@ -264,9 +296,9 @@ const Nav = () => {
                     setToggleDropdown(false);
                     signOut();
                   }}
-                  className={`w-full text-left px-4 py-3 font-medium transition-colors rounded-b-xl ${
+                  className={`w-full text-left px-5 py-3.5 font-medium transition-all duration-300 rounded-b-xl ${
                     isDarkMode && themeConfig
-                      ? `${themeConfig.buttonBg} text-white ${themeConfig.buttonHover}`
+                      ? `${themeConfig.buttonBg} ${themeConfig.buttonText} ${themeConfig.buttonHover}`
                       : "bg-blue-600 text-white hover:bg-blue-700"
                   }`}
                 >
@@ -283,9 +315,9 @@ const Nav = () => {
                   type="button"
                   key={provider.name}
                   onClick={() => signIn(provider.id)}
-                  className={`px-3 py-2 rounded-lg font-medium transition-all ${
+                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
                     isDarkMode && themeConfig
-                      ? `${themeConfig.text} hover:${themeConfig.accentBg} border ${themeConfig.border}`
+                      ? `${themeConfig.text} hover:${themeConfig.accentBg} border ${themeConfig.borderLight}`
                       : "text-slate-700 hover:bg-slate-100 border border-slate-300"
                   }`}
                 >
