@@ -17,6 +17,17 @@ const SalesSchema = new Schema(
       type: Number,
       required: [true, "Cost price at time of sale is required."],
     },
+    isDebt: { 
+      type: Boolean, 
+      default: false,
+      required: false 
+    },
+    paymentMethod: {
+      type: String,
+      enum: ["cash", "transfer"],
+      default: "cash",
+      required: false,
+    },
     userId: { // <--- ADD THIS FIELD (uncommented and named userId)
         type: Schema.Types.ObjectId,
         ref: 'User',

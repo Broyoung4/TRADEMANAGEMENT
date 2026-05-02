@@ -40,7 +40,7 @@ export const POST = async (request) => {
         const body = await request.json();
         const {
             itemId, quantitySold, sellingPrice, profit,
-            unitSold, costPriceAtTimeOfSale
+            unitSold, costPriceAtTimeOfSale, isDebt = false, paymentMethod = "cash"
         } = body;
 
         // --- Basic Validation ---
@@ -92,6 +92,8 @@ export const POST = async (request) => {
             saleDate: new Date(),
             unitSold,
             costPriceAtTimeOfSale,
+            isDebt,
+            paymentMethod,
             userId: loggedInUserId, // Assign current user's ID to the sale
         });
         await newSale.save({ session: mongooseSession });
